@@ -1320,7 +1320,7 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
             </p>
           </div>
 
-          <div className="flex gap-4 pb-2">
+          <div className="hidden md:flex gap-4 pb-2">
             <button
               onClick={() => slide(-1)}
               className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
@@ -1338,6 +1338,15 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
 
         <div className="relative overflow-visible" ref={containerRef}>
           <motion.div
+            drag="x"
+            dragConstraints={{
+              right: 0,
+              left: -((extendedItems.length - 1) * (itemWidth + gap)),
+            }}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -50) slide(1);
+              else if (info.offset.x > 50) slide(-1);
+            }}
             animate={{
               x: -idx * (itemWidth + gap) + (windowWidth - itemWidth) / 2,
             }}
@@ -1346,7 +1355,7 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
                 ? { type: "spring", stiffness: 100, damping: 20 }
                 : { duration: 0 }
             }
-            className="flex gap-4"
+            className="flex gap-4 cursor-grab active:cursor-grabbing"
           >
             {extendedItems.map((e, i) => (
               <div
@@ -1400,7 +1409,7 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
   return (
     <section
       id="accommodations"
-      className="py-20 md:py-28 px-5 md:px-16 bg-navy relative overflow-hidden"
+      className="py-20 md:py-28 px-5 md:px-16 bg-white relative overflow-hidden"
     >
       <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3" />
 
@@ -1709,7 +1718,7 @@ function CulinarySection() {
             </h2>
           </div>
 
-          <div className="flex gap-3">
+          <div className="hidden lg:flex gap-3">
             <button
               onClick={prevSlide}
               className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
@@ -1723,6 +1732,18 @@ function CulinarySection() {
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
+
+          {/* Slide Indicators for Mobile/Tablet */}
+          <div className="flex lg:hidden gap-2 mt-4 relative z-10">
+            {slides.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 transition-all duration-500 rounded-full ${
+                  activeSlide === i ? "w-8 bg-gold" : "w-2 bg-white/20"
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="relative min-h-[600px] lg:h-[650px] overflow-hidden lg:overflow-visible">
@@ -1734,12 +1755,18 @@ function CulinarySection() {
               initial="enter"
               animate="center"
               exit="exit"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -100) nextSlide();
+                else if (info.offset.x > 100) prevSlide();
+              }}
               transition={{
                 x: { type: "spring", stiffness: 100, damping: 20 },
                 opacity: { duration: 0.4 },
                 scale: { duration: 0.6 },
               }}
-              className="lg:absolute inset-0"
+              className="lg:absolute inset-0 cursor-grab active:cursor-grabbing"
             >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full">
                 <div className="order-2 lg:order-1">
