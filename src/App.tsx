@@ -3,7 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
+  lazy,
+  Suspense,
+} from "react";
 import { motion, AnimatePresence, useScroll, useSpring } from "motion/react";
 import {
   Menu,
@@ -174,36 +183,26 @@ const FLEET = [
 
 // --- Components ---
 
-function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 4, 1)); // May 2025 as requested
+const BOOKED_DAYS = [3, 7, 8, 14, 21, 22, 27];
+const CAL_MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+const CAL_DAYS_HEADER = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+const CalendarComponent = memo(function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 4, 1));
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
-  const bookedDays = [3, 7, 8, 14, 21, 22, 27];
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const daysHeader = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-  const changeMonth = (dir: number) => {
+  const changeMonth = useCallback((dir: number) => {
     setCurrentDate(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() + dir, 1),
     );
-  };
+  }, []);
 
-  const toggleDay = (d: number, isBooked: boolean) => {
+  const toggleDay = useCallback((d: number, isBooked: boolean) => {
     if (isBooked) return;
-    const dateStr = `${d} ${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    const dateStr = `${d} ${CAL_MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
     setSelectedDays((prev) => {
       const idx = prev.indexOf(d);
       if (idx === -1) {
@@ -212,7 +211,7 @@ function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
       }
       return prev.filter((day) => day !== d);
     });
-  };
+  }, [currentDate, onSelect]);
 
   const firstDay = new Date(
     currentDate.getFullYear(),
@@ -231,15 +230,17 @@ function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => changeMonth(-1)}
+          aria-label="Previous month"
           className="p-2 hover:bg-white/5 rounded-lg transition-colors border border-white/10 text-white/50 hover:text-white"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <span className="font-serif text-lg">
-          {months[currentDate.getMonth()]} {currentDate.getFullYear()}
+          {CAL_MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
         </span>
         <button
           onClick={() => changeMonth(1)}
+          aria-label="Next month"
           className="p-2 hover:bg-white/5 rounded-lg transition-colors border border-white/10 text-white/50 hover:text-white"
         >
           <ChevronRight className="w-5 h-5" />
@@ -247,7 +248,7 @@ function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
       </div>
 
       <div className="cal-grid">
-        {daysHeader.map((h) => (
+        {CAL_DAYS_HEADER.map((h) => (
           <div key={h} className="cal-head">
             {h}
           </div>
@@ -261,13 +262,17 @@ function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
             d === today.getDate() &&
             currentDate.getMonth() === today.getMonth() &&
             currentDate.getFullYear() === today.getFullYear();
-          const isBooked = bookedDays.includes(d);
+          const isBooked = BOOKED_DAYS.includes(d);
           const isSelected = selectedDays.includes(d);
 
           return (
             <div
               key={d}
               onClick={() => toggleDay(d, isBooked)}
+              role="button"
+              tabIndex={isBooked ? -1 : 0}
+              aria-label={`${isBooked ? "Booked" : isSelected ? "Selected" : "Available"}: ${d} ${CAL_MONTHS[currentDate.getMonth()]}`}
+              onKeyDown={(e) => e.key === "Enter" && toggleDay(d, isBooked)}
               className={`
                 cal-day 
                 ${isBooked ? "booked" : isSelected ? "selected" : "available"}
@@ -281,7 +286,7 @@ function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
       </div>
     </div>
   );
-}
+});
 
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -307,35 +312,39 @@ export default function App() {
   });
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-      setShowFab(window.scrollY > 600);
-
-      // Sticky Route logic: Show between Vessel and Experiences
-      const vesselSection = document.getElementById("vessel");
-      const experiencesSection = document.getElementById("experiences");
-      if (vesselSection && experiencesSection) {
-        const vesselTop = vesselSection.offsetTop;
-        const experiencesBottom =
-          experiencesSection.offsetTop + experiencesSection.offsetHeight;
-        setIsStickyRoute(
-          window.scrollY > vesselTop && window.scrollY < experiencesBottom,
-        );
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const y = window.scrollY;
+          setIsScrolled(y > 50);
+          setShowFab(y > 600);
+          const vesselSection = document.getElementById("vessel");
+          const experiencesSection = document.getElementById("experiences");
+          if (vesselSection && experiencesSection) {
+            const vesselTop = vesselSection.offsetTop;
+            const experiencesBottom =
+              experiencesSection.offsetTop + experiencesSection.offsetHeight;
+            setIsStickyRoute(y > vesselTop && y < experiencesBottom);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const addToast = (msg: string, title: string, type: string = "success") => {
+  const addToast = useCallback((msg: string, title: string, type: string = "success") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, msg, title, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
-  };
+  }, []);
 
-  const nextHero = () => setHeroIdx((prev) => (prev + 1) % 3);
+  const nextHero = useCallback(() => setHeroIdx((prev) => (prev + 1) % 3), []);
 
   useEffect(() => {
     const interval = setInterval(nextHero, 6500);
@@ -735,7 +744,7 @@ export default function App() {
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-gold to-gold/80 rounded-full flex items-center justify-center shadow-xl z-50 group"
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-gold to-gold/80 rounded-full flex items-center justify-center shadow-xl z-50 group"
           >
             <ChevronLeft className="w-6 h-6 text-navy rotate-90 group-hover:translate-y-[-2px] transition-transform" />
           </motion.button>
@@ -743,7 +752,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Toasts */}
-      <div className="fixed bottom-8 right-8 flex flex-col gap-3 z-[10001]">
+      <div className="fixed bottom-24 right-4 md:bottom-8 md:right-8 flex flex-col gap-3 z-[10001]">
         <AnimatePresence>
           {toasts.map((t) => (
             <motion.div
@@ -776,7 +785,7 @@ export default function App() {
   );
 }
 
-function Navbar({
+const Navbar = memo(function Navbar({
   isScrolled,
   setMobileMenuOpen,
   openAvail,
@@ -823,6 +832,7 @@ function Navbar({
           </button>
           <button
             onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open navigation menu"
             className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white lg:hidden hover:bg-gold hover:text-navy transition-all"
           >
             <Menu className="w-5 h-5" />
@@ -831,7 +841,7 @@ function Navbar({
       </div>
     </nav>
   );
-}
+});
 
 function MobileMenu({
   setMobileMenuOpen,
@@ -954,6 +964,8 @@ function Hero({
             src={slides[heroIdx].img}
             className="w-full h-full object-cover"
             alt=""
+            fetchPriority="high"
+            loading="eager"
           />
           {/* Depth Gradient for better readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/40 to-transparent" />
@@ -980,7 +992,7 @@ function Hero({
                   {slides[heroIdx].tag}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif leading-[1.1] mb-5 tracking-[-0.02em]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif leading-[1.1] mb-5 tracking-[-0.02em]">
                 {slides[heroIdx].line1}
                 <br />
                 <span className="italic text-white">
@@ -994,7 +1006,7 @@ function Hero({
               <div className="flex flex-wrap gap-5 items-center">
                 <button
                   onClick={openAvail}
-                  className="group relative px-8 py-4 overflow-hidden rounded-full"
+                  className="group relative px-8 py-4 min-h-[44px] overflow-hidden rounded-full"
                 >
                   <div className="absolute inset-0 bg-gold transition-transform duration-500 group-hover:scale-105" />
                   <span className="relative z-10 text-navy font-bold text-[10px] uppercase tracking-[3px]">
@@ -1101,7 +1113,8 @@ function Hero({
             onClick={() =>
               setHeroIdx((curr) => (curr === 0 ? slides.length - 1 : curr - 1))
             }
-            className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group scale-90 md:scale-100"
+            aria-label="Previous slide"
+            className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group"
           >
             <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
           </button>
@@ -1109,7 +1122,8 @@ function Hero({
             onClick={() =>
               setHeroIdx((curr) => (curr === slides.length - 1 ? 0 : curr + 1))
             }
-            className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group scale-90 md:scale-100"
+            aria-label="Next slide"
+            className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group"
           >
             <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
@@ -1164,6 +1178,7 @@ function VesselSection({
               src="assets/hero1.png"
               className="w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-105"
               alt="Serendipity Vessel"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-navy/5 group-hover:bg-transparent transition-all duration-700" />
             <div className="absolute inset-0 border-[8px] border-white/5 m-3 rounded-[1.2rem] pointer-events-none group-hover:border-gold/10 transition-colors duration-500" />
@@ -1244,70 +1259,42 @@ function VesselSection({
 }
 
 function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
-  const [idx, setIdx] = useState(EXPERIENCES.length);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [transitionStatus, setTransitionStatus] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [direction, setDirection] = useState(0);
 
-  const extendedItems = useMemo(
-    () => [...EXPERIENCES, ...EXPERIENCES, ...EXPERIENCES],
-    [],
+  const next = () => {
+    setDirection(1);
+    setActiveIdx((prev) => (prev + 1) % EXPERIENCES.length);
+  };
+
+  const prev = () => {
+    setDirection(-1);
+    setActiveIdx((prev) => (prev - 1 + EXPERIENCES.length) % EXPERIENCES.length);
+  };
+
+  // Mobile: full-screen swipe carousel
+  const slideVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0, scale: 0.97 }),
+    center: { x: 0, opacity: 1, scale: 1, zIndex: 1 },
+    exit: (dir: number) => ({ x: dir < 0 ? "100%" : "-100%", opacity: 0, scale: 0.97, zIndex: 0 }),
+  };
+
+  // Desktop: visible window of 4 cards, shifts by 1 on each click
+  // Build a looping window: always show activeIdx through activeIdx+3
+  const desktopVisible = Array.from({ length: 4 }, (_, i) =>
+    EXPERIENCES[(activeIdx + i) % EXPERIENCES.length]
   );
-
-  const slide = (d: number) => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setTransitionStatus(true);
-    setIdx((prev) => prev + d);
-  };
-
-  const handleAnimationComplete = () => {
-    setIsAnimating(false);
-
-    // Seamless infinite reset
-    if (idx >= EXPERIENCES.length * 2) {
-      setTransitionStatus(false);
-      setIdx(idx - EXPERIENCES.length);
-    } else if (idx < EXPERIENCES.length) {
-      setTransitionStatus(false);
-      setIdx(idx + EXPERIENCES.length);
-    }
-  };
-
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1400,
-  );
-
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    const debouncedResize = () => {
-      clearTimeout((window as any).resizeTimer);
-      (window as any).resizeTimer = setTimeout(handleResize, 100);
-    };
-    window.addEventListener("resize", debouncedResize);
-    return () => window.removeEventListener("resize", debouncedResize);
-  }, []);
-
-  const isMobile = windowWidth < 768;
-  const itemWidth = isMobile ? windowWidth - 56 : 380;
-  const gap = isMobile ? 12 : 32;
-  const offset = (windowWidth - itemWidth) / 2;
-
-  // Optimized image URL helper
-  const getOptimizedImg = (url: string) => {
-    const size = isMobile ? "w=800&q=60" : "w=1200&q=80";
-    return `${url.split("?")[0]}?auto=format&fit=crop&${size}`;
-  };
 
   return (
     <section
       id="experiences"
       className="py-24 md:py-32 bg-navy overflow-hidden relative"
     >
-      <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30 pointer-events-none" />
-      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto relative z-10">
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 px-5 md:px-16">
           <div>
             <div className="flex items-center gap-3 mb-6">
@@ -1326,15 +1313,16 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
             </p>
           </div>
 
-          <div className="hidden md:flex gap-4">
+          {/* Desktop nav arrows */}
+          <div className="hidden lg:flex gap-4">
             <button
-              onClick={() => slide(-1)}
+              onClick={prev}
               className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
             >
               <ChevronLeft className="w-6 h-6 transition-transform group-hover:-translate-x-1" />
             </button>
             <button
-              onClick={() => slide(1)}
+              onClick={next}
               className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
             >
               <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
@@ -1342,100 +1330,135 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
           </div>
         </div>
 
-        <div className="relative overflow-visible" ref={containerRef}>
-          <motion.div
-            drag="x"
-            dragMomentum={false}
-            dragElastic={0.1}
-            animate={{ x: -idx * (itemWidth + gap) + offset }}
-            onAnimationComplete={handleAnimationComplete}
-            transition={
-              transitionStatus
-                ? {
-                    type: "spring",
-                    stiffness: 250,
-                    damping: 30,
-                    mass: 0.8,
-                  }
-                : { duration: 0 }
-            }
-            onDragEnd={(_, info) => {
-              const swipeThreshold = 50;
-              const velocityThreshold = 500;
-
-              if (
-                info.offset.x < -swipeThreshold ||
-                info.velocity.x < -velocityThreshold
-              ) {
-                slide(1);
-              } else if (
-                info.offset.x > swipeThreshold ||
-                info.velocity.x > velocityThreshold
-              ) {
-                slide(-1);
-              }
-            }}
-            className="flex hover:cursor-grab active:cursor-grabbing"
-            style={{
-              gap: `${gap}px`,
-              willChange: "transform",
-              touchAction: "pan-y",
-            }}
-          >
-            {extendedItems.map((e, i) => (
-              <div
-                key={i}
-                onClick={() => !isAnimating && openExp(e)}
-                style={{ width: `${itemWidth}px` }}
-                className="aspect-[10/13] relative group rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5 active:scale-[0.98] transition-transform duration-300"
+        {/* ── DESKTOP: 4-card grid, click-only ── */}
+        <div className="hidden lg:grid grid-cols-4 gap-5 px-16">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
+            {desktopVisible.map((e, i) => (
+              <motion.div
+                key={`${e.title}-${(activeIdx + i) % EXPERIENCES.length}`}
+                custom={direction}
+                initial={{ opacity: 0, x: direction > 0 ? 60 : -60 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: direction > 0 ? -60 : 60 }}
+                transition={{ duration: 0.25, delay: i * 0.04, ease: [0.25, 1, 0.5, 1] }}
+                onClick={() => openExp(e)}
+                className="aspect-[10/13] relative rounded-[1.5rem] overflow-hidden cursor-pointer shadow-2xl border border-white/5 group"
               >
                 <img
-                  src={getOptimizedImg(e.img)}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  alt=""
+                  src={e.img}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  alt={e.title}
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent" />
-
-                <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                  <div className="flex items-center gap-2 mb-3">
+                <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                  <div className="flex items-center gap-2 mb-2">
                     <span className="w-4 h-[1px] bg-gold" />
-                    <span className="text-[8px] font-bold text-gold uppercase tracking-[2px]">
-                      {e.tag}
-                    </span>
+                    <span className="text-[8px] font-bold text-gold uppercase tracking-[2px]">{e.tag}</span>
                   </div>
-                  <h3 className="text-xl md:text-2xl font-serif text-white group-hover:text-gold transition-colors duration-500 mb-2">
+                  <h3 className="text-lg font-serif text-white group-hover:text-gold transition-colors duration-300 mb-1">
                     {e.title}
                   </h3>
-                  <div className="hidden md:flex items-center gap-2 text-white/30 group-hover:text-gold transition-all duration-700 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0">
-                    <span className="text-[10px] font-bold uppercase tracking-[4px]">
-                      Explore Experience
-                    </span>
-                    <ArrowUpRight className="w-4 h-4 ml-1" />
+                  <div className="flex items-center gap-1 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 text-white/60">
+                    <span className="text-[9px] font-bold uppercase tracking-[3px]">Explore</span>
+                    <ArrowUpRight className="w-3 h-3" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </motion.div>
+          </AnimatePresence>
         </div>
 
-        <div className="flex justify-center gap-3 mt-16 pb-4">
+        {/* Dot indicators — desktop */}
+        <div className="hidden lg:flex justify-center gap-3 mt-10 pb-4">
           {EXPERIENCES.map((_, i) => (
             <button
               key={i}
               aria-label={`Go to slide ${i + 1}`}
-              onClick={() => {
-                const currentRelIdx = idx % EXPERIENCES.length;
-                slide(i - currentRelIdx);
-              }}
+              onClick={() => { setDirection(i > activeIdx ? 1 : -1); setActiveIdx(i); }}
               className={`h-1.5 rounded-full transition-all duration-500 ${
-                idx % EXPERIENCES.length === i
-                  ? "w-12 bg-gold"
-                  : "w-4 bg-white/10 hover:bg-white/20"
+                activeIdx === i ? "w-12 bg-gold" : "w-4 bg-white/10 hover:bg-white/20"
               }`}
             />
           ))}
         </div>
+
+        {/* ── MOBILE: full-screen swipe carousel ── */}
+        <div className="lg:hidden">
+          <div className="relative overflow-hidden mx-5 rounded-[1.5rem]" style={{ aspectRatio: "10/13", maxHeight: "70vh" }}>
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={activeIdx}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.08}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -60 || info.velocity.x < -300) next();
+                  else if (info.offset.x > 60 || info.velocity.x > 300) prev();
+                }}
+                transition={{
+                  x: { type: "spring", stiffness: 180, damping: 22 },
+                  opacity: { duration: 0.15 },
+                  scale: { duration: 0.2 },
+                }}
+                className="absolute inset-0 cursor-grab active:cursor-grabbing"
+                onClick={() => openExp(EXPERIENCES[activeIdx])}
+              >
+                <img
+                  src={EXPERIENCES[activeIdx].img}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  alt={EXPERIENCES[activeIdx].title}
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent" />
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-4 h-[1px] bg-gold" />
+                    <span className="text-[8px] font-bold text-gold uppercase tracking-[2px]">
+                      {EXPERIENCES[activeIdx].tag}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-serif text-white mb-2">
+                    {EXPERIENCES[activeIdx].title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-white/60 mt-1">
+                    <span className="text-[10px] font-bold uppercase tracking-[4px]">Explore Experience</span>
+                    <ArrowUpRight className="w-4 h-4 ml-1" />
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile nav arrows */}
+          <div className="flex items-center justify-between px-5 mt-6">
+            <button onClick={prev} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group">
+              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+            {/* Dot indicators — mobile */}
+            <div className="flex gap-3">
+              {EXPERIENCES.map((_, i) => (
+                <button
+                  key={i}
+                  aria-label={`Go to slide ${i + 1}`}
+                  onClick={() => { setDirection(i > activeIdx ? 1 : -1); setActiveIdx(i); }}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    activeIdx === i ? "w-8 bg-gold" : "w-3 bg-white/10"
+                  }`}
+                />
+              ))}
+            </div>
+            <button onClick={next} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group">
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
   );
@@ -1993,11 +2016,12 @@ function ReviewsSection() {
           animate={{ x: ["0%", "-50%"] }}
           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
           className="flex gap-6 whitespace-nowrap"
+          style={{ willChange: "transform" }}
         >
           {infiniteReviews.map((r, i) => (
             <div
               key={i}
-              className="w-[300px] md:w-[420px] shrink-0 p-10 md:p-12 bg-white rounded-[2.5rem] whitespace-normal group border border-navy/5 shadow-xl"
+              className="w-[280px] sm:w-[340px] md:w-[420px] shrink-0 p-8 md:p-12 bg-white rounded-[2.5rem] whitespace-normal group border border-navy/5 shadow-xl"
             >
               <p className="text-lg font-serif text-navy leading-relaxed mb-8 italic">
                 "{r.text}"
@@ -2110,7 +2134,7 @@ function BookingSection({
 
           {/* Right Column: Form Container */}
           <div className="lg:col-span-6">
-            <div className="bg-navy-light/95 backdrop-blur-2xl border border-white/10 p-8 md:p-14 rounded-[3rem] shadow-2xl">
+            <div className="bg-navy-light/95 backdrop-blur-2xl border border-white/10 p-6 sm:p-10 md:p-14 rounded-[2rem] md:rounded-[3rem] shadow-2xl">
               <h3 className="text-3xl font-serif text-white mb-3">
                 Inquire Now
               </h3>
