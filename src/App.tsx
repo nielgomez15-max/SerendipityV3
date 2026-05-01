@@ -1259,11 +1259,12 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
     setIsAnimating(true);
     setTransitionStatus(true);
     setIdx((prev) => prev + d);
-    setTimeout(() => setIsAnimating(false), 450);
   };
 
-  useEffect(() => {
-    if (isAnimating) return;
+  const handleAnimationComplete = () => {
+    setIsAnimating(false);
+
+    // Seamless infinite reset
     if (idx >= EXPERIENCES.length * 2) {
       setTransitionStatus(false);
       setIdx(idx - EXPERIENCES.length);
@@ -1271,7 +1272,7 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
       setTransitionStatus(false);
       setIdx(idx + EXPERIENCES.length);
     }
-  }, [idx, isAnimating]);
+  };
 
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1400,
@@ -1279,22 +1280,32 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const debouncedResize = () => {
+      clearTimeout((window as any).resizeTimer);
+      (window as any).resizeTimer = setTimeout(handleResize, 100);
+    };
+    window.addEventListener("resize", debouncedResize);
+    return () => window.removeEventListener("resize", debouncedResize);
   }, []);
 
   const isMobile = windowWidth < 768;
-  const itemWidth = isMobile ? windowWidth - 64 : 380;
+  const itemWidth = isMobile ? windowWidth - 56 : 380;
   const gap = isMobile ? 12 : 32;
   const offset = (windowWidth - itemWidth) / 2;
+
+  // Optimized image URL helper
+  const getOptimizedImg = (url: string) => {
+    const size = isMobile ? "w=800&q=60" : "w=1200&q=80";
+    return `${url.split("?")[0]}?auto=format&fit=crop&${size}`;
+  };
 
   return (
     <section
       id="experiences"
       className="py-24 md:py-32 bg-navy overflow-hidden relative"
     >
-      <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30" />
-      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)]" />
+      <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30 pointer-events-none" />
+      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 px-5 md:px-16">
@@ -1334,26 +1345,37 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
         <div className="relative overflow-visible" ref={containerRef}>
           <motion.div
             drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
             dragMomentum={false}
+            dragElastic={0.1}
             animate={{ x: -idx * (itemWidth + gap) + offset }}
+            onAnimationComplete={handleAnimationComplete}
             transition={
               transitionStatus
                 ? {
                     type: "spring",
-                    stiffness: 150,
-                    damping: 25,
+                    stiffness: 250,
+                    damping: 30,
                     mass: 0.8,
                   }
                 : { duration: 0 }
             }
             onDragEnd={(_, info) => {
               const swipeThreshold = 50;
-              if (info.offset.x < -swipeThreshold) slide(1);
-              else if (info.offset.x > swipeThreshold) slide(-1);
+              const velocityThreshold = 500;
+
+              if (
+                info.offset.x < -swipeThreshold ||
+                info.velocity.x < -velocityThreshold
+              ) {
+                slide(1);
+              } else if (
+                info.offset.x > swipeThreshold ||
+                info.velocity.x > velocityThreshold
+              ) {
+                slide(-1);
+              }
             }}
-            className="flex"
+            className="flex hover:cursor-grab active:cursor-grabbing"
             style={{
               gap: `${gap}px`,
               willChange: "transform",
@@ -1363,17 +1385,17 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
             {extendedItems.map((e, i) => (
               <div
                 key={i}
-                onClick={() => openExp(e)}
+                onClick={() => !isAnimating && openExp(e)}
                 style={{ width: `${itemWidth}px` }}
-                className="aspect-[10/13] relative group rounded-[2rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5"
+                className="aspect-[10/13] relative group rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5 active:scale-[0.98] transition-transform duration-300"
               >
                 <img
-                  src={e.img}
+                  src={getOptimizedImg(e.img)}
                   className="absolute inset-0 w-full h-full object-cover"
                   alt=""
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent" />
 
                 <div className="absolute inset-0 p-8 flex flex-col justify-end">
                   <div className="flex items-center gap-2 mb-3">
@@ -1401,6 +1423,7 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
           {EXPERIENCES.map((_, i) => (
             <button
               key={i}
+              aria-label={`Go to slide ${i + 1}`}
               onClick={() => {
                 const currentRelIdx = idx % EXPERIENCES.length;
                 slide(i - currentRelIdx);
