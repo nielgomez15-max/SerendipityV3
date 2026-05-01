@@ -39,6 +39,7 @@ import {
   Twitter,
   CreditCard,
   Lock,
+  ChevronDown,
 } from "lucide-react";
 
 // --- Types ---
@@ -185,12 +186,26 @@ const FLEET = [
 
 const BOOKED_DAYS = [3, 7, 8, 14, 21, 22, 27];
 const CAL_MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 const CAL_DAYS_HEADER = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-const CalendarComponent = memo(function CalendarComponent({ onSelect }: { onSelect: (date: string) => void }) {
+const CalendarComponent = memo(function CalendarComponent({
+  onSelect,
+}: {
+  onSelect: (date: string) => void;
+}) {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 4, 1));
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
 
@@ -200,18 +215,21 @@ const CalendarComponent = memo(function CalendarComponent({ onSelect }: { onSele
     );
   }, []);
 
-  const toggleDay = useCallback((d: number, isBooked: boolean) => {
-    if (isBooked) return;
-    const dateStr = `${d} ${CAL_MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-    setSelectedDays((prev) => {
-      const idx = prev.indexOf(d);
-      if (idx === -1) {
-        onSelect(dateStr);
-        return [...prev, d];
-      }
-      return prev.filter((day) => day !== d);
-    });
-  }, [currentDate, onSelect]);
+  const toggleDay = useCallback(
+    (d: number, isBooked: boolean) => {
+      if (isBooked) return;
+      const dateStr = `${d} ${CAL_MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+      setSelectedDays((prev) => {
+        const idx = prev.indexOf(d);
+        if (idx === -1) {
+          onSelect(dateStr);
+          return [...prev, d];
+        }
+        return prev.filter((day) => day !== d);
+      });
+    },
+    [currentDate, onSelect],
+  );
 
   const firstDay = new Date(
     currentDate.getFullYear(),
@@ -336,13 +354,16 @@ export default function App() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const addToast = useCallback((msg: string, title: string, type: string = "success") => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, msg, title, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  }, []);
+  const addToast = useCallback(
+    (msg: string, title: string, type: string = "success") => {
+      const id = Date.now();
+      setToasts((prev) => [...prev, { id, msg, title, type }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    },
+    [],
+  );
 
   const nextHero = useCallback(() => setHeroIdx((prev) => (prev + 1) % 3), []);
 
@@ -350,6 +371,23 @@ export default function App() {
     const interval = setInterval(nextHero, 6500);
     return () => clearInterval(interval);
   }, []);
+
+  /**
+   * Navigate to the standalone Payment page.
+   * Passes booking context via URL query params so Payment.tsx can pre-fill.
+   */
+  const navigateToPayment = (data: {
+    name: string;
+    email: string;
+    eventType: string;
+  }) => {
+    const params = new URLSearchParams({
+      name: data.name,
+      email: data.email,
+      eventType: data.eventType,
+    });
+    window.location.href = `/payment?${params.toString()}`;
+  };
 
   return (
     <div className="min-h-screen selection:bg-gold selection:text-white">
@@ -424,7 +462,7 @@ export default function App() {
         <FleetSection />
         <CulinarySection />
         <ReviewsSection />
-        <BookingSection addToast={addToast} />
+        <BookingSection addToast={addToast} openPayment={navigateToPayment} />
       </main>
 
       <Footer isScrolled={isScrolled} />
@@ -1269,20 +1307,32 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
 
   const prev = () => {
     setDirection(-1);
-    setActiveIdx((prev) => (prev - 1 + EXPERIENCES.length) % EXPERIENCES.length);
+    setActiveIdx(
+      (prev) => (prev - 1 + EXPERIENCES.length) % EXPERIENCES.length,
+    );
   };
 
   // Mobile: full-screen swipe carousel
   const slideVariants = {
-    enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0, scale: 0.97 }),
+    enter: (dir: number) => ({
+      x: dir > 0 ? "100%" : "-100%",
+      opacity: 0,
+      scale: 0.97,
+    }),
     center: { x: 0, opacity: 1, scale: 1, zIndex: 1 },
-    exit: (dir: number) => ({ x: dir < 0 ? "100%" : "-100%", opacity: 0, scale: 0.97, zIndex: 0 }),
+    exit: (dir: number) => ({
+      x: dir < 0 ? "100%" : "-100%",
+      opacity: 0,
+      scale: 0.97,
+      zIndex: 0,
+    }),
   };
 
   // Desktop: visible window of 4 cards, shifts by 1 on each click
   // Build a looping window: always show activeIdx through activeIdx+3
-  const desktopVisible = Array.from({ length: 4 }, (_, i) =>
-    EXPERIENCES[(activeIdx + i) % EXPERIENCES.length]
+  const desktopVisible = Array.from(
+    { length: 4 },
+    (_, i) => EXPERIENCES[(activeIdx + i) % EXPERIENCES.length],
   );
 
   return (
@@ -1340,7 +1390,11 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
                 initial={{ opacity: 0, x: direction > 0 ? 60 : -60 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: direction > 0 ? -60 : 60 }}
-                transition={{ duration: 0.25, delay: i * 0.04, ease: [0.25, 1, 0.5, 1] }}
+                transition={{
+                  duration: 0.25,
+                  delay: i * 0.04,
+                  ease: [0.25, 1, 0.5, 1],
+                }}
                 onClick={() => openExp(e)}
                 className="aspect-[10/13] relative rounded-[1.5rem] overflow-hidden cursor-pointer shadow-2xl border border-white/5 group"
               >
@@ -1354,13 +1408,17 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
                 <div className="absolute inset-0 p-6 flex flex-col justify-end">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="w-4 h-[1px] bg-gold" />
-                    <span className="text-[8px] font-bold text-gold uppercase tracking-[2px]">{e.tag}</span>
+                    <span className="text-[8px] font-bold text-gold uppercase tracking-[2px]">
+                      {e.tag}
+                    </span>
                   </div>
                   <h3 className="text-lg font-serif text-white group-hover:text-gold transition-colors duration-300 mb-1">
                     {e.title}
                   </h3>
                   <div className="flex items-center gap-1 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 text-white/60">
-                    <span className="text-[9px] font-bold uppercase tracking-[3px]">Explore</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[3px]">
+                      Explore
+                    </span>
                     <ArrowUpRight className="w-3 h-3" />
                   </div>
                 </div>
@@ -1375,9 +1433,14 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
             <button
               key={i}
               aria-label={`Go to slide ${i + 1}`}
-              onClick={() => { setDirection(i > activeIdx ? 1 : -1); setActiveIdx(i); }}
+              onClick={() => {
+                setDirection(i > activeIdx ? 1 : -1);
+                setActiveIdx(i);
+              }}
               className={`h-1.5 rounded-full transition-all duration-500 ${
-                activeIdx === i ? "w-12 bg-gold" : "w-4 bg-white/10 hover:bg-white/20"
+                activeIdx === i
+                  ? "w-12 bg-gold"
+                  : "w-4 bg-white/10 hover:bg-white/20"
               }`}
             />
           ))}
@@ -1385,7 +1448,10 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
 
         {/* ── MOBILE: full-screen swipe carousel ── */}
         <div className="lg:hidden">
-          <div className="relative overflow-hidden mx-5 rounded-[1.5rem]" style={{ aspectRatio: "10/13", maxHeight: "70vh" }}>
+          <div
+            className="relative overflow-hidden mx-5 rounded-[1.5rem]"
+            style={{ aspectRatio: "10/13", maxHeight: "70vh" }}
+          >
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
                 key={activeIdx}
@@ -1427,7 +1493,9 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
                     {EXPERIENCES[activeIdx].title}
                   </h3>
                   <div className="flex items-center gap-2 text-white/60 mt-1">
-                    <span className="text-[10px] font-bold uppercase tracking-[4px]">Explore Experience</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[4px]">
+                      Explore Experience
+                    </span>
                     <ArrowUpRight className="w-4 h-4 ml-1" />
                   </div>
                 </div>
@@ -1437,7 +1505,10 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
 
           {/* Mobile nav arrows */}
           <div className="flex items-center justify-between px-5 mt-6">
-            <button onClick={prev} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group">
+            <button
+              onClick={prev}
+              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group"
+            >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
             {/* Dot indicators — mobile */}
@@ -1446,19 +1517,24 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
-                  onClick={() => { setDirection(i > activeIdx ? 1 : -1); setActiveIdx(i); }}
+                  onClick={() => {
+                    setDirection(i > activeIdx ? 1 : -1);
+                    setActiveIdx(i);
+                  }}
                   className={`h-1.5 rounded-full transition-all duration-500 ${
                     activeIdx === i ? "w-8 bg-gold" : "w-3 bg-white/10"
                   }`}
                 />
               ))}
             </div>
-            <button onClick={next} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group">
+            <button
+              onClick={next}
+              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group"
+            >
               <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
-
       </div>
     </section>
   );
@@ -2049,17 +2125,27 @@ function ReviewsSection() {
 
 function BookingSection({
   addToast,
+  openPayment,
 }: {
   addToast: (m: string, t: string, tp: string) => void;
+  openPayment: (data: {
+    name: string;
+    email: string;
+    eventType: string;
+  }) => void;
 }) {
   const [loading, setLoading] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [eventType, setEventType] = useState("Day Charter");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      addToast("Your inquiry has been processed.", "Success", "success");
+      openPayment({ name: `${firstName} ${lastName}`, email, eventType });
       (e.target as HTMLFormElement).reset();
     }, 1500);
   };
@@ -2151,6 +2237,9 @@ function BookingSection({
                     </label>
                     <input
                       required
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm"
                       placeholder="John"
                     />
@@ -2161,6 +2250,9 @@ function BookingSection({
                     </label>
                     <input
                       required
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm"
                       placeholder="Doe"
                     />
@@ -2173,6 +2265,8 @@ function BookingSection({
                   </label>
                   <input
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     type="email"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm"
                     placeholder="john@example.com"
@@ -2183,7 +2277,11 @@ function BookingSection({
                   <label className="text-[9px] font-bold uppercase tracking-[2px] text-white/30 ml-1">
                     Event Type
                   </label>
-                  <select className="w-full bg-navy/50 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all text-sm appearance-none cursor-pointer">
+                  <select
+                    value={eventType}
+                    onChange={(e) => setEventType(e.target.value)}
+                    className="w-full bg-navy/50 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all text-sm appearance-none cursor-pointer"
+                  >
                     <option value="day">Day Charter</option>
                     <option value="sunset">Sunset Cruise</option>
                     <option value="overnight">Overnight Experience</option>
@@ -2203,7 +2301,6 @@ function BookingSection({
                 </div>
 
                 <button
-                  type="submit"
                   disabled={loading}
                   className="w-full py-5 bg-gold text-navy font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-gold-hover transition-all shadow-xl shadow-gold/20 mt-4 active:scale-[0.98]"
                 >
