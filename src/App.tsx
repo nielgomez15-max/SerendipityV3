@@ -24,9 +24,12 @@ import {
   Droplets,
   Utensils,
   Zap,
+  Anchor,
   Facebook,
   Instagram,
   Twitter,
+  CreditCard,
+  Lock,
 } from "lucide-react";
 
 // --- Types ---
@@ -100,15 +103,23 @@ const EXPERIENCES: Experience[] = [
     img: "assets/occasion5.png",
     tag: "VIP Room",
     title: "First Class Relaxation",
-    desc: "Experience the pinnacle of luxury in our VIP staterooms. Each room is a sanctuary of comfort, featuring plush bedding, ambient lighting, and personalized service to ensure your stay is nothing short of extraordinary.",
-    features: ["Plush bedding with premium linens"],
+    desc: "Experience unparalleled privacy and comfort on this expertly remodeled hardtop motor yacht. Our VIP staterooms offer a sanctuary of luxury with plush bedding, ensuite bathrooms, and personalized service to ensure your stay is nothing short of extraordinary.",
+    features: [
+      "Queen bed with premium bedding",
+      "Private ensuite bathroom",
+      "Climate-controlled environment",
+    ],
   },
   {
     img: "assets/occasion6.png",
     tag: "Kitchen",
     title: "Chef's Cooking Class",
-    desc: "Join our award-winning chef for an immersive culinary experience on the water. Learn to prepare signature dishes while enjoying stunning ocean views.",
-    features: ["Hands-on cooking experience"],
+    desc: "Learn to cook delicious meals with our expert chefs in the comfort of our onboard kitchen.",
+    features: [
+      "Hands-on cooking experience",
+      "Personalized recipes",
+      "Includes meal preparation",
+    ],
   },
 ];
 
@@ -370,7 +381,7 @@ export default function App() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 20, opacity: 0 }}
             onClick={() => setIsRouteOpen(true)}
-            className="fixed right-0 top-1/2 -translate-y-1/2 z-[999] flex items-center gap-3 bg-navy-light/40 backdrop-blur-md border-l border-y border-gold/10 pl-2 pr-1.5 py-5 rounded-l-xl cursor-pointer hover:bg-gold/10 hover:border-gold/30 transition-all group shadow-xl"
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-[999] flex items-center gap-3 bg-navy-light/60 backdrop-blur-md border-l border-y border-gold/10 pl-2 pr-1.5 py-5 rounded-l-xl cursor-pointer hover:bg-gold/10 hover:border-gold/30 transition-all group shadow-xl"
           >
             <div className="flex flex-col items-center gap-4">
               <motion.div
@@ -381,10 +392,10 @@ export default function App() {
                   ease: "easeInOut",
                 }}
               >
-                <MapPin className="w-3.5 h-3.5 text-gold/60 group-hover:text-gold transition-colors" />
+                <MapPin className="w-3.5 h-3.5 text-gold group-hover:text-gold transition-colors" />
               </motion.div>
               <div className="rotate-180 [writing-mode:vertical-lr] flex items-center gap-2 whitespace-nowrap">
-                <span className="text-[8px] font-bold tracking-[3px] uppercase text-white/20 group-hover:text-gold/60 transition-colors">
+                <span className="text-[8px] font-bold tracking-[3px] uppercase text-white/40 group-hover:text-gold transition-colors">
                   Route
                 </span>
               </div>
@@ -407,7 +418,7 @@ export default function App() {
         <BookingSection addToast={addToast} />
       </main>
 
-      <Footer />
+      <Footer isScrolled={isScrolled} />
 
       {/* --- Modals --- */}
       <AnimatePresence>
@@ -532,11 +543,8 @@ export default function App() {
                   "assets/occasion5.png",
                   "assets/occasion6.png",
                   "assets/cheryl_foods.jpeg",
-                  "assets/cheryl_foods1.jpeg",
-                  "assets/cheryl_foods2.jpeg",
                   "assets/hero1.png",
                   "assets/hero2.png",
-                  "assets/hero3.png",
                 ].map((img, i) => (
                   <motion.div
                     key={i}
@@ -779,31 +787,12 @@ function Navbar({
 }) {
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-500 px-6 md:px-16 ${isScrolled ? "bg-navy/90 backdrop-blur-2xl py-4 shadow-xl" : "py-8"}`}
+      className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-500 ${isScrolled ? "bg-navy/95 backdrop-blur-md py-3 shadow-xl" : "py-8 bg-transparent"}`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <a href="#" className="flex items-center gap-3 group">
-            <img
-              src="assets/logo.png"
-              alt="Serendipity Logo"
-              className="h-14 md:h-20 w-auto group-hover:scale-105 transition-transform"
-            />
-          </a>
-
-          {/* Availability Status Badge */}
-          <button
-            onClick={openAvail}
-            className="hidden xl:flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-gold/30 hover:bg-white/10 transition-all cursor-pointer group/avail"
-          >
-            <div className="w-2 h-2 rounded-full bg-green-500 relative">
-              <div className="absolute inset-0 bg-green-500 rounded-full animate-pulse opacity-70" />
-            </div>
-            <span className="text-[10px] font-bold text-white/40 tracking-[2px] uppercase group-hover/avail:text-gold transition-colors">
-              Live Availability
-            </span>
-          </button>
-        </div>
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center justify-between">
+        <a href="/">
+          <img src="assets/logo.png" alt="Logo" width="120" />
+        </a>
 
         <div className="hidden lg:flex items-center gap-1">
           {[
@@ -817,26 +806,26 @@ function Navbar({
             <a
               key={l}
               href={`#${l.toLowerCase()}`}
-              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors relative group"
+              className="px-4 py-2 text-[10px] font-bold tracking-[2.5px] uppercase text-white/50 hover:text-gold transition-all relative group/link"
             >
               {l}
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-gold transition-all duration-300 group-hover:w-1/2" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-gold transition-all duration-500 group-hover/link:w-6" />
             </a>
           ))}
         </div>
 
         <div className="flex items-center gap-4">
-          <a
-            href="#booking"
-            className="hidden md:flex bg-gold px-8 py-3 rounded-full text-navy font-bold text-sm hover:translate-y-[-2px] transition-all shadow-lg shadow-gold/20 hover:shadow-gold/30"
+          <button
+            onClick={openAvail}
+            className="hidden md:flex items-center gap-3 px-6 py-2.5 rounded-full bg-gold text-navy text-[9px] font-bold uppercase tracking-[2px] transition-all hover:bg-white hover:scale-105 active:scale-95 shadow-lg shadow-gold/20"
           >
-            Book Now
-          </a>
+            Inquire Now
+          </button>
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white lg:hidden hover:bg-gold hover:text-navy transition-all"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -917,48 +906,48 @@ function Hero({
   openRoute,
 }: {
   heroIdx: number;
-  setHeroIdx: (i: number) => void;
+  setHeroIdx: React.Dispatch<React.SetStateAction<number>>;
   openAvail: () => void;
   openVideo: () => void;
   openRoute: () => void;
 }) {
   const slides = [
     {
-      line1: "Your Gulf Coast",
-      line2: "Escape Awaits",
-      desc: "Reserve our luxury 94' Lazzara yacht for charter in St Pete / Tampa Bay.",
+      line1: "The Pinnacle of",
+      line2: "Gulf Coast Luxury",
+      desc: "Immerse yourself in a refined maritime escape aboard our meticulously curated 94' Lazzara hardtop motor yacht.",
       img: "assets/hero1.png",
-      tag: "Saint Petersburg, FL",
+      tag: "Saint Petersburg • Florida",
     },
     {
-      line1: "Experience",
-      line2: "Pure Luxury",
-      desc: "Discover breathtaking views and world-class comfort on Florida's Gulf Coast.",
+      line1: "Curated Moments",
+      line2: "Tailored for You",
+      desc: "From sunset cocktails to multi-day escapes, every detail is engineered for unforgettable luxury.",
       img: "assets/hero2.png",
-      tag: "Tampa Bay, FL",
+      tag: "Tampa Bay • Florida",
     },
     {
-      line1: "Make Memories",
-      line2: "at Sea",
-      desc: "Unforgettable moments aboard our expertly remodeled luxury yacht.",
+      line1: "A Floating Oasis of",
+      line2: "Serene Sophistication",
+      desc: "Discover the perfect harmony of high-performance engineering and residential-level comfort at sea.",
       img: "assets/hero3.png",
-      tag: "Gulf Coast, FL",
+      tag: "The Gulf Coast • Florida",
     },
   ];
 
   return (
     <section
       id="home"
-      className="relative h-screen min-h-[600px] overflow-hidden"
+      className="relative h-screen flex items-center overflow-hidden bg-navy"
     >
-      {/* Slides */}
+      {/* Background Visuals */}
       <AnimatePresence mode="wait">
         <motion.div
           key={heroIdx}
-          initial={{ opacity: 0, scale: 1.1 }}
+          initial={{ opacity: 0, scale: 1.15 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 2, ease: [0.19, 1, 0.22, 1] }}
           className="absolute inset-0"
         >
           <img
@@ -966,117 +955,174 @@ function Hero({
             className="w-full h-full object-cover"
             alt=""
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-navy/50 via-navy/20 to-navy" />
-          <div className="absolute inset-0 bg-gradient-to-r from-navy/80 to-transparent" />
+          {/* Depth Gradient for better readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-navy/40 via-transparent to-navy/70" />
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative h-full max-w-7xl mx-auto px-6 md:px-16 flex flex-col justify-end pb-24 md:pb-32 z-10">
-        <motion.div
-          key={heroIdx + "content"}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="max-w-4xl"
-        >
-          <div className="flex items-center gap-3 mb-6 hero-tag-line">
-            <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-              {slides[heroIdx].tag}
-            </span>
-          </div>
-          <h1 className="text-[32px] md:text-[62px] font-serif leading-[1.08] tracking-tight mb-6">
-            <span>{slides[heroIdx].line1}</span>
-            <br />
-            <em className="text-gold italic font-serif">
-              {slides[heroIdx].line2}
-            </em>
-          </h1>
-          <p className="text-base md:text-xl text-white/70 mb-10 leading-relaxed max-w-lg">
-            {slides[heroIdx].desc}
-          </p>
-          <div className="flex flex-wrap gap-6 items-center">
-            <a
-              href="#booking"
-              className="bg-gold px-10 py-5 rounded-full text-navy font-bold text-base hover:translate-y-[-3px] transition-all flex items-center gap-2 shadow-xl shadow-gold/20"
+      <div className="relative z-10 max-w-[1400px] mx-auto px-5 md:px-16 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-7">
+            <motion.div
+              key={heroIdx + "content"}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.5,
+                duration: 1.2,
+                ease: [0.19, 1, 0.22, 1],
+              }}
             >
-              Reserve Now <ArrowUpRight className="w-5 h-5" />
-            </a>
-            <button
-              onClick={openVideo}
-              className="flex items-center gap-4 text-white hover:text-gold transition-all group"
-            >
-              <div className="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center group-hover:border-gold group-hover:bg-gold transition-all">
-                <Play className="w-5 h-5 fill-current ml-1" />
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-10 h-[1px] bg-gold" />
+                <span className="text-[9px] font-bold tracking-[5px] uppercase text-gold">
+                  {slides[heroIdx].tag}
+                </span>
               </div>
-              <span className="font-bold tracking-widest text-sm uppercase">
-                Watch Experience
-              </span>
-            </button>
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif leading-[1.1] mb-5 tracking-[-0.02em]">
+                {slides[heroIdx].line1}
+                <br />
+                <span className="italic text-white">
+                  {slides[heroIdx].line2}
+                </span>
+              </h1>
+              <p className="text-xs md:text-base text-white/60 mb-8 md:mb-10 leading-relaxed max-w-md font-light tracking-wide">
+                {slides[heroIdx].desc}
+              </p>
+
+              <div className="flex flex-wrap gap-5 items-center">
+                <button
+                  onClick={openAvail}
+                  className="group relative px-8 py-4 overflow-hidden rounded-full"
+                >
+                  <div className="absolute inset-0 bg-gold transition-transform duration-500 group-hover:scale-105" />
+                  <span className="relative z-10 text-navy font-bold text-[10px] uppercase tracking-[3px]">
+                    Inquire Availability
+                  </span>
+                </button>
+
+                <button
+                  onClick={openVideo}
+                  className="group flex items-center gap-4 text-white"
+                >
+                  <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:border-gold transition-all duration-500 group-hover:bg-gold/5">
+                    <Play className="w-3 h-3 text-gold fill-gold" />
+                  </div>
+                  <div className="flex flex-col items-start translate-x-[-10px] group-hover:translate-x-0 transition-transform duration-500">
+                    <span className="text-[8px] font-bold uppercase tracking-[2px] text-white/50">
+                      Preview
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-[2px]">
+                      Experience
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+
+          {/* Floating Route Card */}
+          <div className="hidden lg:block lg:col-span-3 lg:col-start-10 relative">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{
+                opacity: 1,
+                x: 0,
+                y: [0, -10, 0],
+              }}
+              transition={{
+                opacity: { delay: 1, duration: 1 },
+                x: { delay: 1, duration: 1 },
+                y: {
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                },
+              }}
+              onClick={openRoute}
+              className="bg-navy-light/40 backdrop-blur-2xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl cursor-pointer hover:border-gold/50 transition-all group lg:scale-75 origin-right"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-gold" />
+                  <span className="text-[8px] font-bold uppercase tracking-[3px] text-gold">
+                    Popular Route
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  <ArrowUpRight className="w-3 h-3" />
+                </div>
+              </div>
+
+              <div className="aspect-video rounded-lg overflow-hidden mb-4 border border-white/5">
+                <img
+                  src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600"
+                  className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                  alt=""
+                />
+              </div>
+
+              <h4 className="text-base font-serif mb-2">The Island Hopper</h4>
+              <p className="text-white/40 text-[10px] leading-relaxed line-clamp-2">
+                Discover the Gulf's most pristine sandbars and historic
+                lighthouse islands.
+              </p>
+
+              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star key={i} className="w-2 h-2 fill-gold text-gold" />
+                  ))}
+                </div>
+                <span className="text-[8px] font-bold uppercase tracking-[2px] text-white/30">
+                  Select Route
+                </span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </div>
 
-      {/* Interactive Popular Route Card */}
-      <motion.div
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.8 }}
-        onClick={openRoute}
-        className="absolute top-40 right-16 hidden lg:block w-72 bg-navy/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl hover:border-gold/50 hover:bg-navy/60 transition-all cursor-pointer group animate-float-y z-20"
-      >
-        <div className="relative overflow-hidden rounded-xl mb-4 pointer-events-none">
-          <img
-            src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=400"
-            className="w-full h-full aspect-video object-cover group-hover:scale-110 transition-transform duration-700"
-            alt=""
-          />
-          <div className="absolute inset-0 bg-navy/20 group-hover:bg-transparent transition-colors" />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="bg-gold/90 text-navy px-4 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg">
-              View Route <ArrowUpRight className="w-3 h-3" />
-            </div>
-          </div>
+      {/* Hero Navigation */}
+      <div className="absolute bottom-8 left-0 w-full px-5 md:px-16 flex items-center justify-between z-20">
+        <div className="flex items-center gap-3">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setHeroIdx(i)}
+              className={`w-2.5 h-2.5 rounded-full border border-white/30 transition-all duration-500 ${heroIdx === i ? "bg-gold border-gold scale-110" : "hover:border-white"}`}
+            />
+          ))}
         </div>
-        <div className="flex items-center justify-between mb-2 pointer-events-none">
-          <span className="text-[10px] font-bold text-gold tracking-widest uppercase">
-            Popular Route
-          </span>
-          <div className="flex items-center gap-1">
-            <Star className="w-3 h-3 fill-gold text-gold" />
-            <span className="text-[10px] font-bold text-white/80">4.9</span>
-          </div>
-        </div>
-        <h4 className="font-serif text-lg group-hover:text-gold transition-colors pointer-events-none">
-          Island Hopping
-        </h4>
-        <p className="text-xs text-white/50 mt-1 leading-relaxed pointer-events-none">
-          Egmont Key, Shell Key & hidden sandbars
-        </p>
 
-        <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between pointer-events-none">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-white/30">
-            From $1,200
-          </span>
-          <div className="flex items-center gap-2 text-gold text-[10px] font-bold uppercase tracking-widest">
-            View Itinerary <ArrowUpRight className="w-3 h-3" />
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Nav Dots */}
-      <div className="absolute right-8 md:right-16 bottom-32 md:bottom-40 flex flex-col gap-3">
-        {[0, 1, 2].map((i) => (
+        <div className="flex items-center gap-4">
           <button
-            key={i}
-            onClick={() => setHeroIdx(i)}
-            className={`w-2.5 transition-all duration-500 ${heroIdx === i ? "h-10 bg-gold rounded-md" : "h-2.5 bg-white/20 rounded-full hover:bg-white/40"}`}
-          />
-        ))}
+            onClick={() =>
+              setHeroIdx((curr) => (curr === 0 ? slides.length - 1 : curr - 1))
+            }
+            className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group scale-90 md:scale-100"
+          >
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+          <button
+            onClick={() =>
+              setHeroIdx((curr) => (curr === slides.length - 1 ? 0 : curr + 1))
+            }
+            className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group scale-90 md:scale-100"
+          >
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40 animate-bounce">
-        <span className="text-[10px] tracking-[2px] uppercase">Scroll</span>
-        <ChevronLeft className="w-5 h-5 -rotate-90" />
+      {/* Decorative Side Element */}
+      <div className="absolute left-10 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-6">
+        <div className="w-[1px] h-24 bg-gradient-to-t from-gold to-transparent" />
+        <span className="[writing-mode:vertical-lr] text-[10px] font-bold uppercase tracking-[5px] text-gold/40">
+          Luxury Charter St. Pete
+        </span>
+        <div className="w-[1px] h-24 bg-gradient-to-b from-gold to-transparent" />
       </div>
     </section>
   );
@@ -1094,90 +1140,104 @@ function VesselSection({
   return (
     <section
       id="vessel"
-      className="py-12 md:py-20 px-6 md:px-[10px] bg-navy-light relative overflow-hidden"
+      className="py-12 md:py-16 bg-stone relative overflow-hidden group/vessel"
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+      <div className="absolute top-0 right-0 p-8 opacity-[0.02] select-none pointer-events-none">
+        <h2 className="text-[120px] font-serif leading-none rotate-90 origin-right">
+          YACHT
+        </h2>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-5 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative group"
+          transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
+          className="relative lg:max-w-sm mx-auto"
         >
-          <div className="absolute -top-10 -left-10 w-32 h-32 border border-gold/20 rounded-full animate-spin-slow" />
           <div
-            className="shimmer-wrap rounded-[2rem] overflow-hidden relative"
+            className="aspect-[5/6] rounded-[1.5rem] overflow-hidden shadow-2xl relative group cursor-pointer"
             onClick={openGallery}
           >
             <img
-              src="assets/gallerymain.png"
-              className="w-full aspect-[4/3] object-cover hover:scale-105 transition-transform duration-700 cursor-pointer"
-              alt="Serendipity Yacht"
+              src="assets/hero1.png"
+              className="w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-105"
+              alt="Serendipity Vessel"
             />
-            <div className="absolute bottom-6 right-6 bg-navy/90 backdrop-blur-xl border border-gold/20 p-6 rounded-2xl">
-              <p className="text-4xl font-serif text-gold font-bold">94'</p>
-              <p className="text-xs text-white/40 uppercase tracking-widest mt-1">
-                Lazzara Motor Yacht
-              </p>
+            <div className="absolute inset-0 bg-navy/5 group-hover:bg-transparent transition-all duration-700" />
+            <div className="absolute inset-0 border-[8px] border-white/5 m-3 rounded-[1.2rem] pointer-events-none group-hover:border-gold/10 transition-colors duration-500" />
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="absolute -left-2 md:-left-6 bottom-8 bg-white p-5 rounded-xl shadow-xl border border-navy/5 hidden sm:block"
+          >
+            <p className="text-2xl font-serif text-navy tracking-tighter">
+              94 FT
+            </p>
+            <p className="text-[7px] font-bold text-gold uppercase tracking-[3px] opacity-80 leading-none">
+              Lazzara Hardtop
+            </p>
+          </motion.div>
+        </motion.div>
+
+        <div className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-8 h-[1px] bg-gold" />
+              <span className="text-[9px] font-bold tracking-[5px] uppercase text-gold">
+                Technical Profile
+              </span>
             </div>
-          </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-[1.5px] bg-gold" />
-            <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-              About Serendipity
-            </span>
-          </div>
-          <h2 className="text-4xl md:text-6xl font-serif leading-tight mb-8">
-            Experience the Ocean
-            <br />
-            <em className="text-gold italic font-serif">Like Never Before</em>
-          </h2>
-          <div className="space-y-6 text-white/60 leading-relaxed text-lg pb-10">
-            <p>
-              Welcome aboard to Serendipity, an extraordinary charter
-              experience. Based in Saint Petersburg, Florida, Serendipity is an
-              expertly remodeled, stunning 94' Lazzara Hardtop motor yacht.
-            </p>
-            <p>
-              Located between Tampa and Sarasota on Florida's Gulf Coast,
-              Serendipity offers rare access to secret inlets and calm
-              anchorages that few yachts of this size can reach.
-            </p>
-          </div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-navy mb-5 leading-[1.1] tracking-tight">
+              A Masterclass in <br />
+              <span className="italic text-gold">Nautical Refinement</span>
+            </h2>
 
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { val: "94 ft", label: "Yacht Length", icon: Wind },
-              { val: "12", label: "Max Guests", icon: User },
-              { val: "20+", label: "Destinations", icon: MapPin },
-              { val: "5.0 ★", label: "Guest Rating", icon: Star },
-            ].map((s, i) => (
-              <div
-                key={i}
-                onClick={() =>
-                  i === 2
-                    ? openAvail()
-                    : addToast(`Detail about ${s.label}`, s.val, "gold")
-                }
-                className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-gold/30 transition-all cursor-pointer group"
-              >
-                <s.icon className="w-6 h-6 text-gold mb-4 group-hover:scale-110 transition-transform" />
-                <p className="text-3xl font-serif text-gold font-bold">
-                  {s.val}
-                </p>
-                <p className="text-xs text-white/40 uppercase tracking-widest mt-1">
-                  {s.label}
-                </p>
+            <p className="text-navy/60 text-xs md:text-sm leading-relaxed mb-8 font-light max-w-lg">
+              Refined by design, Serendipity offers a contemporary coastal
+              aesthetic that transforms every charter into a residence-level
+              experience.
+            </p>
+
+            <div className="grid grid-cols-2 gap-x-12 gap-y-8 mb-12 border-t border-navy/5 pt-8">
+              {[
+                { label: "Crew", val: "Professional" },
+                { label: "Year", val: "2025 Refit" },
+                { label: "Capacity", val: "12 Guests" },
+                { label: "Suites", val: "4 Staterooms" },
+              ].map((s, i) => (
+                <div key={i} className="group/item">
+                  <p className="text-[8px] font-bold text-gold uppercase tracking-[3px] mb-1 opacity-70">
+                    {s.label}
+                  </p>
+                  <p className="text-xl font-serif text-navy leading-none">
+                    {s.val}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={openAvail}
+              className="group flex items-center gap-4 text-navy font-bold text-[10px] uppercase tracking-[4px]"
+            >
+              <div className="w-12 h-12 rounded-full border border-navy/10 flex items-center justify-center transition-all duration-500 group-hover:bg-gold group-hover:border-gold shadow-md">
+                <ArrowUpRight className="w-5 h-5 group-hover:text-white transition-transform group-hover:rotate-45" />
               </div>
-            ))}
-          </div>
-        </motion.div>
+              Booking Request
+            </button>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -1189,7 +1249,6 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
   const [transitionStatus, setTransitionStatus] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Triple the items to create a seamless infinite scroll buffer
   const extendedItems = useMemo(
     () => [...EXPERIENCES, ...EXPERIENCES, ...EXPERIENCES],
     [],
@@ -1203,10 +1262,8 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
     setTimeout(() => setIsAnimating(false), 500);
   };
 
-  // Teleport logic to handle infinite loop seamlessly
   useEffect(() => {
     if (isAnimating) return;
-
     if (idx >= EXPERIENCES.length * 2) {
       setTransitionStatus(false);
       setIdx(idx - EXPERIENCES.length);
@@ -1217,7 +1274,7 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
   }, [idx, isAnimating]);
 
   const [windowWidth, setWindowWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1200,
+    typeof window !== "undefined" ? window.innerWidth : 1400,
   );
 
   useEffect(() => {
@@ -1226,293 +1283,305 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const itemWidth = windowWidth >= 768 ? 350 : 280;
+  const itemWidth = windowWidth >= 768 ? 380 : 280;
   const gap = 24;
-  const sectionPadding = windowWidth < 768 ? 24 : 64; // px-6 is 24px
+  const sectionPadding = windowWidth < 768 ? 20 : 64;
   const offset =
     (windowWidth - itemWidth) / 2 - (windowWidth < 768 ? sectionPadding : 0);
 
   return (
     <section
       id="experiences"
-      className="py-12 md:py-20 bg-navy overflow-hidden relative px-6 md:px-16"
+      className="py-20 md:py-28 bg-navy overflow-hidden relative"
     >
-      {/* Edge Gradients - Moved to far edges to ensure first card clarity */}
-      <div className="hidden xl:block absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-navy via-navy/90 to-transparent z-20 pointer-events-none" />
-      <div className="hidden md:block absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-navy via-navy/90 to-transparent z-20 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)]" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="max-w-7xl mx-auto"
-      >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16 relative z-30 px-6 md:px-0">
+      {/* Viewport Gradients - Fixed at edges */}
+      <div className="absolute left-0 top-0 bottom-0 w-24 md:w-64 bg-gradient-to-r from-navy via-navy/80 to-transparent z-20 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-24 md:w-64 bg-gradient-to-l from-navy via-navy/80 to-transparent z-20 pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between px-5 md:px-16 gap-8 mb-16">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-[1.5px] bg-gold" />
-              <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-                Curated Experiences
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-[1px] bg-gold" />
+              <span className="text-[10px] font-bold tracking-[4px] uppercase text-gold">
+                The Experience
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-serif leading-tight">
-              A Floating Resort for
-              <br />
-              <em className="text-gold italic font-serif">Every Occasion</em>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white tracking-tight leading-[1] mb-6">
+              Refined <br />
+              <span className="italic text-gold">Moments</span>
             </h2>
+            <p className="max-w-md text-white/40 text-xs md:text-sm font-light tracking-wide leading-relaxed">
+              Every charter is a bespoke creation tailored to the unique desires
+              of our guests.
+            </p>
           </div>
-          <div className="flex gap-4">
+
+          <div className="flex gap-4 pb-2">
             <button
               onClick={() => slide(-1)}
-              disabled={isAnimating}
-              className={`w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:border-gold hover:text-gold transition-all active:scale-95 ${isAnimating ? "opacity-50" : ""}`}
+              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
             </button>
             <button
               onClick={() => slide(1)}
-              disabled={isAnimating}
-              className={`w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:border-gold hover:text-gold transition-all active:scale-95 ${isAnimating ? "opacity-50" : ""}`}
+              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         </div>
 
-        <div className="relative" ref={containerRef}>
+        <div className="relative overflow-visible" ref={containerRef}>
           <motion.div
             animate={{
-              x: -idx * (itemWidth + gap) + (windowWidth < 768 ? offset : 0),
+              x: -idx * (itemWidth + gap) + (windowWidth - itemWidth) / 2,
             }}
             transition={
               transitionStatus
-                ? { type: "spring", stiffness: 180, damping: 25, mass: 1 }
+                ? { type: "spring", stiffness: 100, damping: 20 }
                 : { duration: 0 }
             }
-            className="flex gap-6 pointer-events-auto"
-            style={{
-              width: "max-content",
-            }}
+            className="flex gap-4"
           >
             {extendedItems.map((e, i) => (
               <div
                 key={i}
                 onClick={() => openExp(e)}
-                className="w-[280px] md:w-[350px] aspect-[3/4.2] relative group rounded-3xl overflow-hidden cursor-pointer shrink-0 shadow-2xl bg-navy-light"
+                className="w-[240px] md:w-[320px] aspect-[10/13] relative group rounded-[1.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5"
               >
                 <img
                   src={e.img}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
                   alt=""
                 />
-                {/* Enhanced Dark Gradient for each card */}
-                <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute inset-0 bg-navy/20 hover:bg-transparent transition-colors duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent" />
 
-                <div className="absolute bottom-0 left-0 right-0 p-8 z-10">
-                  <div className="mb-2 w-8 h-[1px] bg-gold group-hover:w-12 transition-all" />
-                  <h3 className="text-xl md:text-2xl font-serif text-white group-hover:text-gold transition-colors">
+                <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-4 h-[1px] bg-gold" />
+                    <span className="text-[7px] font-bold text-gold uppercase tracking-[2px]">
+                      {e.tag}
+                    </span>
+                  </div>
+                  <h3 className="text-lg md:text-xl font-serif text-white group-hover:text-gold transition-colors duration-500 mb-2">
                     {e.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-gold text-[10px] font-bold uppercase tracking-[2px] mt-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                    Discover More <ArrowUpRight className="w-3 h-3" />
+                  <div className="flex items-center gap-2 text-white/30 group-hover:text-gold transition-all duration-700 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0">
+                    <span className="text-[7px] font-bold uppercase tracking-[3px]">
+                      Explore
+                    </span>
+                    <ArrowUpRight className="w-3 h-3" />
                   </div>
                 </div>
               </div>
             ))}
           </motion.div>
         </div>
-
-        <div className="mt-20 pt-10 border-t border-white/10 flex flex-wrap items-center justify-between gap-10 relative z-20">
-          <div className="max-w-lg">
-            <p className="text-white/40 mb-3">
-              With spa-inspired amenities, elegant interiors, and professional
-              crew, Serendipity is designed to impress.
-            </p>
-            <p className="text-gold font-bold text-lg">
-              Plan your private event with us today.
-            </p>
-          </div>
-          <a
-            href="#"
-            className="flex items-center gap-3 text-gold font-bold text-sm tracking-widest uppercase hover:gap-5 transition-all"
-          >
-            Explore Destinations <ChevronRight className="w-4 h-4" />
-          </a>
-        </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
 
 function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
+  const features = [
+    "Hot/Cold Jacuzzi",
+    "Oversized sun lounges",
+    "Al fresco dining area",
+    "Professional wet bar",
+    "Surround sound system",
+    "LED ambient lighting",
+  ];
+
   return (
     <section
       id="accommodations"
-      className="py-12 md:py-20 px-6 md:px-[10px] bg-navy-light"
+      className="py-20 md:py-28 px-5 md:px-16 bg-navy relative overflow-hidden"
     >
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="max-w-7xl mx-auto"
-      >
-        <div className="mb-16 lg:grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-12 lg:items-start">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-[1.5px] bg-gold" />
-              <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3" />
+
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        {/* Header Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-16">
+          <div className="lg:col-span-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-[1px] bg-gold" />
+              <span className="text-[10px] font-bold tracking-[4px] uppercase text-gold">
                 Luxury Living
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-serif leading-tight mb-6 lg:mb-0">
-              Elegant Accommodations
-              <br />
-              <em className="text-gold italic font-serif">
+            <h2 className="text-4xl md:text-5xl lg:text-[70px] font-serif text-white leading-[1.1] tracking-tight">
+              Elegant Accommodations <br />
+              <span className="italic text-gold block mt-2">
                 for Up to 12 Guests
-              </em>
+              </span>
             </h2>
           </div>
-          <p className="text-white/50 text-lg lg:max-w-md lg:justify-self-end lg:pt-12">
-            Rest and unwind in four refined guest suites, each designed for
-            absolute comfort and offering total privacy.
-          </p>
+          <div className="lg:col-span-4 lg:pb-4">
+            <p className="text-white/40 text-xs md:text-sm font-light leading-relaxed max-w-sm ml-auto">
+              Rest and unwind in four refined guest suites, each designed for
+              absolute comfort and offering total privacy.
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-          <div className="relative rounded-[2.5rem] overflow-hidden group">
-            <img
-              src="assets/gallerymain.png"
-              className="w-full aspect-[16/10] object-cover group-hover:scale-105 transition-transform duration-700"
-              alt=""
-            />
-            <div className="absolute bottom-8 left-8 bg-navy/80 backdrop-blur-xl border border-gold/20 p-6 rounded-2xl">
-              <p className="text-4xl font-serif text-gold font-bold">4</p>
-              <p className="text-xs text-white/40 uppercase tracking-widest mt-1">
-                Private Suites
-              </p>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          {/* Main Visual - Large Card */}
+          <div className="lg:col-span-7 relative group">
+            <div className="overflow-hidden rounded-[2.5rem] shadow-2xl relative aspect-[4/3] lg:aspect-auto lg:h-[550px]">
+              <img
+                src="assets/gallerymain.png"
+                className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
+                alt="Main Saloon"
+              />
+              <div className="absolute inset-0 bg-navy/20 group-hover:bg-transparent transition-all duration-700" />
+
+              {/* Floating Label */}
+              <div className="absolute bottom-10 left-10">
+                <div className="bg-navy-light/90 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-2xl">
+                  <p className="text-2xl md:text-3xl font-serif text-gold leading-none mb-1">
+                    4
+                  </p>
+                  <p className="text-[8px] font-bold text-white/50 uppercase tracking-[2px]">
+                    Private Suites
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
+          {/* Sidebar - Room Cards & Features */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
             {ROOMS.map((r, i) => (
-              <div
+              <motion.div
                 key={i}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
                 onClick={() => openRoom(r)}
-                className="flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-gold/30 transition-all cursor-pointer group"
+                className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-5 flex items-center gap-6 hover:bg-white/10 hover:border-gold/30 transition-all shadow-xl"
               >
-                <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-xl overflow-hidden hidden sm:block">
-                    <img
-                      src={r.img}
-                      className="w-full h-full object-cover"
-                      alt=""
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-serif group-hover:text-gold transition-colors">
-                      {r.title}
-                    </h4>
-                    <p className="text-sm text-white/40 mt-1">{r.sub}</p>
-                  </div>
+                <div className="w-20 h-20 md:w-28 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/5">
+                  <img
+                    src={r.img}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt=""
+                  />
                 </div>
-                <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-gold transition-colors" />
-              </div>
+                <div className="flex-grow">
+                  <h4 className="text-lg font-serif text-white mb-1 group-hover:text-gold transition-colors">
+                    {r.title}
+                  </h4>
+                  <p className="text-[10px] text-white/40 uppercase tracking-[1px]">
+                    {r.sub}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-gold group-hover:translate-x-1 transition-all mr-2" />
+              </motion.div>
             ))}
 
-            <div className="p-8 mt-4 bg-gradient-to-br from-gold/10 to-blue-400/5 border border-white/5 rounded-3xl">
-              <h3 className="text-xl font-serif mb-6">
+            {/* Premium Features Box */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2.5rem] p-8 md:p-10 mt-2 shadow-2xl">
+              <h5 className="text-xl font-serif text-white mb-8">
                 Premium Flybridge Features
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                {[
-                  "Hot/Cold Jacuzzi",
-                  "Oversized sun lounges",
-                  "Al fresco dining area",
-                  "Professional wet bar",
-                  "Surround sound system",
-                  "LED ambient lighting",
-                ].map((a, i) => (
+              </h5>
+              <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                {features.map((f, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
                       <Check className="w-3 h-3 text-gold" />
                     </div>
-                    <span className="text-sm text-white/60">{a}</span>
+                    <span className="text-[10px] text-white/60 font-light tracking-wide">
+                      {f}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
 
 function FleetSection() {
-  const [idx, setIdx] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
 
   return (
-    <section id="fleet" className="py-12 md:py-20 px-6 md:px-[10px] bg-navy">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="max-w-7xl mx-auto"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-32 items-center mb-16">
+    <section
+      id="fleet"
+      className="py-12 md:py-16 bg-navy relative border-t border-white/5"
+    >
+      <div className="max-w-[1400px] mx-auto px-5 md:px-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-[1.5px] bg-gold" />
-              <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-                Our Exclusive Fleet
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-[1px] bg-gold" />
+              <span className="text-[9px] font-bold tracking-[5px] uppercase text-gold">
+                The Collection
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-serif leading-tight">
-              Plan Your Yacht
-              <br />
-              <em className="text-gold italic font-serif">Experience Today</em>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] tracking-tight">
+              Adventure <br />
+              <span className="italic text-gold">Arsenal</span>
             </h2>
           </div>
-          <p className="text-white/50 text-lg leading-relaxed">
-            From romantic cruises off Anna Maria Island to corporate retreats in
-            Tampa Bay, adventure meets luxury with a full suite of water sports
-            gear.
+          <p className="max-w-sm text-white/30 text-[10px] md:text-xs font-light tracking-wide leading-relaxed">
+            Beyond the vessel itself, we maintain a fleet of world-class water
+            sports equipment.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {FLEET.map((f, i) => (
             <div
               key={i}
-              className="relative aspect-[3/4] rounded-3xl overflow-hidden group cursor-pointer shadow-2xl"
+              className="relative aspect-[10/14] rounded-[1.5rem] overflow-hidden group cursor-pointer border border-white/5 shadow-xl bg-navy-light"
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setActiveCard(activeCard === i ? null : i);
+                }
+              }}
             >
               <img
                 src={f.img}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ${activeCard === i ? "scale-110" : "group-hover:scale-110"}`}
                 alt=""
               />
-              <div className="absolute inset-0 bg-navy/20 group-hover:bg-navy/80 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy via-transparent to-transparent opacity-60 group-hover:opacity-0 transition-opacity duration-500" />
+              {/* Desktop: Hover logic. Mobile: state logic */}
+              <div
+                className={`absolute inset-0 transition-all duration-700 
+                  ${activeCard === i ? "bg-navy/95" : "bg-navy/40 active:bg-navy/95 group-hover:bg-navy/95"}`}
+              />
 
-              <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
-                <div className="translate-y-8 group-hover:translate-y-0 transition-transform duration-500">
-                  <p className="font-bold text-xl mb-3 text-white group-hover:text-gold transition-colors">
+              <div className="absolute inset-0 p-8 flex flex-col justify-center text-center">
+                <div className="transition-all duration-700">
+                  <p
+                    className={`font-serif text-2xl md:text-3xl mb-4 transition-colors ${activeCard === i ? "text-gold" : "text-white group-hover:text-gold"}`}
+                  >
                     {f.name}
                   </p>
-                  <p className="text-sm text-white/0 group-hover:text-white/70 line-clamp-3 transition-colors duration-500 delay-100 mb-6">
+                  <p
+                    className={`text-[11px] md:text-xs leading-relaxed transition-all duration-700 mx-auto max-w-[240px] text-white/70 
+                        ${activeCard === i ? "opacity-100 mb-8" : "opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 group-hover:mb-8"}`}
+                  >
                     {f.desc}
                   </p>
                 </div>
-                <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-200">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gold">
-                    View Details
+                <div
+                  className={`flex items-center justify-center gap-3 transition-all duration-700 
+                      ${activeCard === i ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0"}`}
+                >
+                  <span className="text-[9px] font-bold uppercase tracking-[3px] text-gold">
+                    Technical Profile
                   </span>
-                  <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-navy shadow-lg hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-navy transition-all">
                     <ArrowUpRight className="w-5 h-5" />
                   </div>
                 </div>
@@ -1520,7 +1589,7 @@ function FleetSection() {
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
@@ -1532,20 +1601,20 @@ function CulinarySection() {
   const slides = [
     {
       id: "chef",
-      tag: "Master of the Galley",
+      tag: "Cuisine Mastery",
       name: "Chef Cheryl",
-      role: "Gulf Coast's Premier Yacht Chef",
+      role: "Premier Culinary Artist",
       profileImg:
         "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=200",
-      titleLine1: "Where ",
-      titleItalic: "Fine Dining",
-      titleLine2: " Meets Home Comfort",
+      titleLine1: "Elevated ",
+      titleItalic: "Epicurean",
+      titleLine2: " Excellence",
       description:
-        "Looking for a personal chef for a party, work event, family dinner, or yacht excursion? Chef Cheryl brings the dream of fine dining to your charter table, where every dish is a labor of love.",
+        "Chef Cheryl transforms the yacht's galley into a world-class kitchen, delivering bespoke menus.",
       items: [
-        "https://images.unsplash.com/photo-1544022613-e87ce71c8599?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1534766555764-ce878a5e3a2b?auto=format&fit=crop&q=80&w=400",
+        "assets/cheryl_foods.jpeg",
+        "assets/cheryl_foods1.jpeg",
+        "assets/cheryl_foods2.jpeg",
       ],
       mainImgs: [
         "assets/cheryl_foods.jpeg",
@@ -1556,25 +1625,25 @@ function CulinarySection() {
     },
     {
       id: "mixology",
-      tag: "The Art of Mixology",
+      tag: "Liquid Artistry",
       name: "Nelly the Mixologist",
-      role: "Expert Craft Cocktail Artist",
+      role: "Cocktail Architect",
       profileImg:
         "https://images.unsplash.com/photo-1574096079513-d8259312b785?auto=format&fit=crop&q=80&w=200",
-      titleLine1: "Crafting Cocktails That ",
-      titleItalic: "Spark Connection",
-      titleLine2: "",
+      titleLine1: "Crafting spirits that ",
+      titleItalic: "Inspire",
+      titleLine2: " dialogue",
       description:
-        "Mixology isn't just about pouring drinks—it's about creating an experience where every sip tells a story. Nelly blends premium spirits and fresh ingredients with a creative flair that makes every guest feel celebrated.",
+        "Nelly's mixology is an exploration of flavor and form using house-made infusions.",
       items: [
         "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1536935338218-d413d714d74e?auto=format&fit=crop&q=80&w=400",
+        "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400",
         "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&q=80&w=400",
       ],
       mainImgs: [
-        "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&q=80&w=500",
-        "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=500",
-        "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=600",
+        "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=400",
+        "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=400",
+        "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&q=80&w=400",
       ],
       icon: (
         <svg
@@ -1600,58 +1669,64 @@ function CulinarySection() {
 
   const slideVariants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
+      x: direction > 0 ? 500 : -500,
       opacity: 0,
+      scale: 0.95,
     }),
     center: {
       zIndex: 1,
       x: 0,
       opacity: 1,
+      scale: 1,
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
+      x: direction < 0 ? 500 : -500,
       opacity: 0,
+      scale: 0.95,
     }),
   };
 
   return (
     <section
       id="culinary"
-      className="py-20 md:py-32 bg-navy-light overflow-hidden relative"
+      className="py-8 md:py-10 bg-navy relative overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-[10px] relative">
-        <div className="flex items-center justify-between mb-12">
+      <div className="absolute inset-0 bg-stone/5 opacity-5" />
+
+      <div className="max-w-[1400px] mx-auto px-5 md:px-16 relative">
+        <div className="flex flex-col md:flex-row md:items-end justify-between px-5 md:px-0 gap-6 mb-12">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-[1.5px] bg-gold" />
-              <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-                Culinary & Mixology
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-[1px] bg-gold" />
+              <span className="text-[9px] font-bold tracking-[5px] uppercase text-gold">
+                Epicurean Theatre
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-serif">
-              Epicurean <em className="text-gold italic font-serif">Journey</em>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white tracking-tight leading-[1]">
+              Gastronomic <br />
+              <span className="italic text-gold">Theatre</span>
             </h2>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               onClick={prevSlide}
-              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group"
+              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
             >
-              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             </button>
             <button
               onClick={nextSlide}
-              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all group"
+              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-500 group"
             >
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         </div>
 
-        <div className="relative h-auto lg:h-[700px]">
-          <AnimatePresence initial={false} custom={direction}>
+        <div className="relative min-h-[600px] lg:h-[650px] overflow-hidden lg:overflow-visible">
+          <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
               key={activeSlide}
               custom={direction}
@@ -1660,105 +1735,109 @@ function CulinarySection() {
               animate="center"
               exit="exit"
               transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
+                x: { type: "spring", stiffness: 100, damping: 20 },
                 opacity: { duration: 0.4 },
+                scale: { duration: 0.6 },
               }}
               className="lg:absolute inset-0"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center h-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full">
                 <div className="order-2 lg:order-1">
-                  <div className="bg-navy/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group/card hover:border-gold/20 transition-colors">
-                    {/* Floating Glow */}
-                    <div className="absolute -top-24 -left-24 w-48 h-48 bg-gold/5 rounded-full blur-[60px]" />
+                  <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative overflow-hidden group/card hover:border-gold/20 transition-all duration-700">
+                    <div className="absolute -top-32 -left-32 w-64 h-64 bg-gold/5 rounded-full blur-[100px]" />
 
                     <div className="relative z-10">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-[1px] bg-gold/50" />
-                        <span className="text-[10px] font-bold tracking-[2px] uppercase text-gold/60">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-8 h-[1px] bg-gold/30" />
+                        <span className="text-[8px] font-bold tracking-[4px] uppercase text-gold/60">
                           {slides[activeSlide].tag}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-5 mb-8">
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-gold/30 p-1 shrink-0 shadow-xl relative">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-gold/20 p-1 shrink-0 shadow-2xl relative transition-colors duration-700">
                           <img
                             src={slides[activeSlide].profileImg}
                             className="w-full h-full object-cover rounded-full"
                             alt={slides[activeSlide].name}
                           />
-                          <div className="absolute -bottom-1 -right-1 bg-navy border border-white/10 rounded-full p-1.5 scale-90">
+                          <div className="absolute -bottom-1 -right-1 bg-navy border border-white/10 rounded-full p-1 scale-75">
                             {slides[activeSlide].icon}
                           </div>
                         </div>
                         <div>
-                          <h3 className="text-xl md:text-2xl font-serif">
+                          <h3 className="text-lg md:text-xl font-serif text-white mb-0.5">
                             {slides[activeSlide].name}
                           </h3>
-                          <p className="text-gold text-[9px] md:text-[10px] uppercase tracking-widest mt-1 font-bold opacity-80">
+                          <p className="text-gold text-[8px] uppercase tracking-[3px] font-bold opacity-70">
                             {slides[activeSlide].role}
                           </p>
                         </div>
                       </div>
 
-                      <h2 className="text-2xl md:text-4xl font-serif mb-6 leading-snug">
+                      <h2 className="text-xl md:text-2xl font-serif text-white mb-4 leading-[1.2] tracking-tight">
                         {slides[activeSlide].titleLine1}
-                        <em className="text-gold italic font-serif">
+                        <span className="italic text-gold">
                           {slides[activeSlide].titleItalic}
-                        </em>
-                        {slides[activeSlide].titleLine2}
+                        </span>
                       </h2>
 
-                      <p className="text-white/50 text-sm md:text-base leading-relaxed">
+                      <p className="text-white/30 text-xs md:text-sm leading-relaxed font-light mb-8">
                         {slides[activeSlide].description}
                       </p>
+
+                      <div className="flex items-center gap-4">
+                        <div className="flex -space-x-2">
+                          {slides[activeSlide].items.map((img, i) => (
+                            <div
+                              key={i}
+                              className="w-10 h-10 rounded-full border-2 border-navy overflow-hidden shadow-lg transition-transform duration-500"
+                            >
+                              <img
+                                src={img}
+                                className="w-full h-full object-cover"
+                                alt=""
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-[8px] font-bold uppercase tracking-[2px] text-white/20">
+                          Signature Selection
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="order-1 lg:order-2 grid grid-cols-2 gap-4 md:gap-6 relative px-4 lg:px-0">
-                  <div className="absolute inset-0 bg-gold/5 blur-[100px] rounded-full -z-10" />
-                  <div className="mt-12">
+                <div className="order-1 lg:order-2 grid grid-cols-2 gap-4 md:gap-5 relative">
+                  <div className="mt-8">
                     <motion.img
-                      whileHover={{ y: -10 }}
+                      whileHover={{ y: -5, scale: 1.02 }}
                       src={slides[activeSlide].mainImgs[0]}
-                      className="w-full aspect-[4/5] object-cover rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-white/10"
-                      alt="Specialty 1"
+                      className="w-full aspect-[4/5] object-cover rounded-[1.5rem] shadow-2xl border border-white/5"
+                      alt=""
                     />
                   </div>
                   <div>
                     <motion.img
-                      whileHover={{ y: -10 }}
+                      whileHover={{ y: -5, scale: 1.02 }}
                       src={slides[activeSlide].mainImgs[1]}
-                      className="w-full aspect-[4/5] object-cover rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-white/10"
-                      alt="Specialty 2"
+                      className="w-full aspect-[4/5] object-cover rounded-[1.5rem] shadow-2xl border border-white/5"
+                      alt=""
                     />
                   </div>
-                  <div className="col-span-2 px-12 md:px-20 -mt-10 relative z-10">
+                  <div className="col-span-2 px-6 md:px-12 -mt-8 relative z-10">
                     <motion.img
                       whileHover={{ scale: 1.02 }}
                       src={slides[activeSlide].mainImgs[2]}
-                      className="w-full aspect-video object-cover rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-white/20"
-                      alt="Specialty 3"
+                      className="w-full aspect-video md:aspect-[3/1] object-cover rounded-[1.5rem] shadow-2xl border border-white/5"
+                      alt=""
                     />
                   </div>
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
-        </div>
-
-        {/* Slide Indicators */}
-        <div className="flex justify-center gap-3 mt-12 md:mt-20">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setDirection(i > activeSlide ? 1 : -1);
-                setActiveSlide(i);
-              }}
-              className={`h-1.5 transition-all duration-500 rounded-full ${activeSlide === i ? "w-8 bg-gold" : "w-4 bg-white/20"}`}
-            />
-          ))}
         </div>
       </div>
     </section>
@@ -1770,37 +1849,37 @@ function ReviewsSection() {
     {
       name: "Carolina Reyes",
       role: "5-Day Charter Guest",
-      text: "We just had a 5 day charter and we could not be any happier. Captain John, Jake and Hailey were amazing. The crew made it perfect and the yacht's beauty I could not even explain. We are already planning our next trip. 5 stars no doubt!!!",
+      text: "We just had a 5 day charter and we could not be any happier. Captain John, Jake and Hailey were amazing. 5 stars no doubt!!!",
       initial: "CR",
     },
     {
       name: "Shannon Cook",
       role: "Day Cruise Guest",
-      text: "I had the opportunity to be a guest for a day cruise and it was lovely. The boat is top notch as are the captains. Definitely recommend!",
+      text: "I had the opportunity to be a guest for a day cruise and it was lovely. Highly recommend!",
       initial: "S",
     },
     {
       name: "Byron Wilson",
       role: "Weekend Charter Guest",
-      text: "We had an amazing time aboard the Serendipity! Unforgettable from start to finish. Already planning our return!",
+      text: "We had an amazing time aboard the Serendipity! Unforgettable from start to finish.",
       initial: "B",
     },
     {
       name: "Michael Chen",
       role: "Corporate Event",
-      text: "Stunning yacht and professional crew. Our executive team was thoroughly impressed. The perfect venue for networking.",
+      text: "Stunning yacht and professional crew. The perfect venue for networking.",
       initial: "M",
     },
     {
       name: "Sarah Jenkins",
       role: "Sunset Cruise",
-      text: "The most beautiful sunset I have ever seen. The attention to detail on Serendipity is unmatched. Truly first-class.",
+      text: "The attention to detail on Serendipity is unmatched. Truly first-class.",
       initial: "S",
     },
     {
       name: "David Miller",
       role: "Anniversary Guest",
-      text: "An absolute dream. The crew went above and beyond to make our anniversary special. Highly recommended!",
+      text: "An absolute dream. The crew went above and beyond to make our anniversary special.",
       initial: "D",
     },
   ];
@@ -1810,74 +1889,56 @@ function ReviewsSection() {
   return (
     <section
       id="reviews"
-      className="py-12 md:py-20 bg-navy-light relative overflow-hidden"
+      className="py-12 md:py-16 bg-stone relative overflow-hidden"
     >
-      {/* Background Decoration */}
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px]" />
-
-      <div className="max-w-7xl mx-auto px-6 md:px-[10px] mb-16">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-[1.5px] bg-gold" />
-          <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-            Guest Reviews
+      <div className="max-w-[1400px] mx-auto px-5 md:px-16 mb-10">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-[1px] bg-gold" />
+          <span className="text-[9px] font-bold tracking-[5px] uppercase text-gold">
+            Voices of Distinction
           </span>
         </div>
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <h2 className="text-4xl md:text-5xl font-serif leading-tight">
-            What Our Clients{" "}
-            <em className="text-gold italic font-serif">Say</em>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-navy leading-[1.1] tracking-tight">
+            Testimonials <br />
+            <span className="italic text-gold">Refinement</span>
           </h2>
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-start md:items-end font-sans">
             <div className="flex items-center gap-1 mb-2">
               {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-5 h-5 fill-gold text-gold" />
+                <Star key={i} className="w-4 h-4 fill-gold text-gold" />
               ))}
             </div>
-            <p className="text-sm font-bold">5.0 Average Rating</p>
+            <p className="text-[9px] font-bold text-navy uppercase tracking-widest">
+              5.0 Star Composite
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Infinite Carousel Container */}
-      <div className="flex overflow-hidden relative py-10">
+      <div className="flex overflow-hidden relative py-6">
         <motion.div
           animate={{ x: ["0%", "-50%"] }}
-          transition={{
-            duration: 35,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
           className="flex gap-6 whitespace-nowrap"
         >
           {infiniteReviews.map((r, i) => (
             <div
               key={i}
-              className="w-[350px] md:w-[450px] shrink-0 p-8 md:p-10 bg-navy/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] whitespace-normal group hover:border-gold/30 transition-all shadow-xl"
+              className="w-[300px] md:w-[420px] shrink-0 p-10 md:p-12 bg-white rounded-[2.5rem] whitespace-normal group border border-navy/5 shadow-xl"
             >
-              <div className="text-gold/20 mb-6 font-serif">
-                <svg
-                  className="w-10 h-10"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                </svg>
-              </div>
-              <div className="flex gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map((j) => (
-                  <Star key={j} className="w-3.5 h-3.5 fill-gold text-gold" />
-                ))}
-              </div>
-              <p className="text-base md:text-lg text-white/80 leading-relaxed mb-8 italic">
+              <p className="text-lg font-serif text-navy leading-relaxed mb-8 italic">
                 "{r.text}"
               </p>
-              <div className="flex items-center gap-4 mt-auto">
-                <div className="w-12 h-12 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center font-bold text-gold text-sm group-hover:bg-gold group-hover:text-navy transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-navy text-gold rounded-full flex items-center justify-center font-bold text-[10px] tracking-widest">
                   {r.initial}
                 </div>
                 <div>
-                  <h5 className="font-bold text-sm">{r.name}</h5>
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
+                  <h5 className="font-bold text-navy text-xs mb-0.5">
+                    {r.name}
+                  </h5>
+                  <p className="text-[8px] text-gold uppercase tracking-[3px] font-bold opacity-70">
                     {r.role}
                   </p>
                 </div>
@@ -1902,11 +1963,7 @@ function BookingSection({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      addToast(
-        "Your charter request has been received. We'll be in touch within 24 hours.",
-        "Request Sent!",
-        "success",
-      );
+      addToast("Your inquiry has been processed.", "Success", "success");
       (e.target as HTMLFormElement).reset();
     }, 1500);
   };
@@ -1914,213 +1971,250 @@ function BookingSection({
   return (
     <section
       id="booking"
-      className="py-12 md:py-20 px-6 md:px-[10px] bg-navy relative overflow-hidden"
+      className="py-24 md:py-32 bg-navy relative overflow-hidden"
     >
-      <div className="absolute inset-0 opacity-10 blur-sm pointer-events-none">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
         <img
-          src="assets/hero1.png"
-          className="w-full h-full object-cover"
-          alt=""
+          src="https://serendipityyachtcharter.com/wp-content/uploads/2026/01/Hero-Header-Bannern2.1-mobile.webp"
+          className="w-full h-full object-cover opacity-20"
+          alt="Yacht Background"
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/95 to-navy/80" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center"
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-[1.5px] bg-gold" />
-            <span className="text-xs font-bold tracking-[2.5px] uppercase text-gold">
-              Start Planning
-            </span>
-          </div>
-          <h2 className="text-4xl md:text-6xl font-serif leading-tight mb-8">
-            Ready for Your
-            <br />
-            <em className="text-gold italic font-serif">Next Adventure?</em>
-          </h2>
-          <p className="text-white/50 text-lg mb-12 max-w-sm">
-            Whether celebrating a milestone or seeking peace on the water,
-            Serendipity brings refined luxury and adventure together.
-          </p>
+      <div className="max-w-[1400px] mx-auto px-5 md:px-16 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+          {/* Left Column: Content */}
+          <div className="lg:col-span-6 pt-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-[1px] bg-gold" />
+              <span className="text-[10px] font-bold tracking-[4px] uppercase text-gold">
+                Start Planning
+              </span>
+            </div>
 
-          <div className="space-y-6">
-            {[
-              { icon: Phone, text: "Call Jake: 412-418-2968" },
-              { icon: Phone, text: "Call Bryon: 727-644-9653" },
-              { icon: MapPin, text: "Saint Petersburg, FL" },
-            ].map((c, i) => (
-              <div key={i} className="flex items-center gap-4 group">
-                <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center group-hover:border-gold/50 transition-colors">
-                  <c.icon className="w-5 h-5 text-gold" />
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white leading-[1.1] tracking-tight mb-8">
+              Ready for Your <br />
+              <span className="italic text-gold block mt-2">
+                Next Adventure?
+              </span>
+            </h2>
+
+            <p className="text-white/40 text-sm md:text-base font-light leading-relaxed mb-12 max-w-md">
+              Whether celebrating a milestone or seeking peace on the water,
+              Serendipity brings refined luxury and adventure together.
+            </p>
+
+            <div className="space-y-6">
+              <div className="flex items-center gap-5 group">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-gold/50 transition-all">
+                  <Phone className="w-5 h-5 text-gold" />
                 </div>
-                <span className="text-white/70 font-medium group-hover:text-white transition-colors">
-                  {c.text}
+                <span className="text-white/70 text-sm md:text-base font-medium">
+                  Call Jake: 412-418-2968
                 </span>
               </div>
-            ))}
+
+              <div className="flex items-center gap-5 group">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-gold/50 transition-all">
+                  <Phone className="w-5 h-5 text-gold" />
+                </div>
+                <span className="text-white/70 text-sm md:text-base font-medium">
+                  Call Bryon: 727-644-9653
+                </span>
+              </div>
+
+              <div className="flex items-center gap-5 group">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-gold/50 transition-all">
+                  <MapPin className="w-5 h-5 text-gold" />
+                </div>
+                <span className="text-white/70 text-sm md:text-base font-medium">
+                  Saint Petersburg, FL
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Form Container */}
+          <div className="lg:col-span-6">
+            <div className="bg-navy-light/95 backdrop-blur-2xl border border-white/10 p-8 md:p-14 rounded-[3rem] shadow-2xl">
+              <h3 className="text-3xl font-serif text-white mb-3">
+                Inquire Now
+              </h3>
+              <p className="text-white/40 text-xs mb-10 leading-relaxed">
+                Tell us about your dream charter and we'll craft the perfect
+                itinerary.
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold uppercase tracking-[2px] text-white/30 ml-1">
+                      First Name
+                    </label>
+                    <input
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm"
+                      placeholder="John"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold uppercase tracking-[2px] text-white/30 ml-1">
+                      Last Name
+                    </label>
+                    <input
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm"
+                      placeholder="Doe"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[2px] text-white/30 ml-1">
+                    Email Address
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm"
+                    placeholder="john@example.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[2px] text-white/30 ml-1">
+                    Event Type
+                  </label>
+                  <select className="w-full bg-navy/50 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all text-sm appearance-none cursor-pointer">
+                    <option value="day">Day Charter</option>
+                    <option value="sunset">Sunset Cruise</option>
+                    <option value="overnight">Overnight Experience</option>
+                    <option value="corporate">Corporate Event</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[2px] text-white/30 ml-1">
+                    Message
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/10 text-sm resize-none"
+                    placeholder="Tell us about your event..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-5 bg-gold text-navy font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-gold-hover transition-all shadow-xl shadow-gold/20 mt-4 active:scale-[0.98]"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  {loading ? "Processing..." : "Proceed to Payment"}
+                </button>
+
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <Lock className="w-3 h-3 text-white/20" />
+                  <span className="text-[9px] text-white/20 uppercase tracking-[1px]">
+                    Secured with 256-bit SSL encryption
+                  </span>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-
-        <div className="p-8 md:p-12 bg-navy-light/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-2xl">
-          <h3 className="text-3xl font-serif mb-2">Inquire Now</h3>
-          <p className="text-white/40 mb-10 text-sm">
-            Tell us about your dream charter and we'll craft the perfect
-            itinerary.
-          </p>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/30 tracking-widest uppercase">
-                  First Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-gold transition-colors"
-                  placeholder="John"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/30 tracking-widest uppercase">
-                  Last Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-gold transition-colors"
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/30 tracking-widest uppercase">
-                Email Address
-              </label>
-              <input
-                required
-                type="email"
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-gold transition-colors"
-                placeholder="john@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/30 tracking-widest uppercase">
-                Event Type
-              </label>
-              <select className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-gold transition-colors appearance-none cursor-pointer">
-                <option className="bg-navy">Day Charter</option>
-                <option className="bg-navy">Sunset Cruise</option>
-                <option className="bg-navy">Overnight Charter</option>
-                <option className="bg-navy">Corporate Event</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-white/30 tracking-widest uppercase">
-                Message
-              </label>
-              <textarea
-                rows={3}
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-gold transition-colors"
-                placeholder="Tell us about your event..."
-              />
-            </div>
-            <button
-              disabled={loading}
-              className="w-full py-5 bg-gradient-to-r from-gold to-gold-hover text-navy font-bold rounded-2xl shadow-xl shadow-gold/20 hover:translate-y-[-2px] active:scale-[0.98] transition-all disabled:opacity-50 disabled:translate-y-0"
-            >
-              {loading ? "Sending Request..." : "Submit Request"}
-            </button>
-          </form>
-        </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
 
-function Footer() {
+function Footer({ isScrolled }: { isScrolled: boolean }) {
   return (
-    <footer className="bg-[#040810] py-20 px-6 border-t border-white/5">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
-          <div className="col-span-1 lg:col-span-1">
-            <div className="flex items-center gap-2 mb-6">
-              <img
-                src="assets/logo.png"
-                alt="Serendipity Logo"
-                className="h-16 w-auto"
-              />
+    <footer className="bg-navy py-16 md:py-24 relative overflow-hidden border-t border-white/5">
+      <div className="max-w-[1400px] mx-auto px-5 md:px-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 mb-16 border-b border-white/5 pb-16">
+          <div>
+            <div className="flex items-center gap-3 mb-8">
+              <a href="/">
+                <img src="assets/logo.png" alt="Logo" width="150" />
+              </a>
             </div>
-            <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">
-              A stunning 94' Lazzara Hardtop motor yacht based in Saint
-              Petersburg, Florida. Experience refined luxury on Florida's Gulf
-              Coast.
+            <p className="text-white/40 text-xs leading-loose font-light mb-8 max-w-xs">
+              The Gulf Coast's premier yachting experience. Refined by design,
+              engineered for unforgettable moments.
             </p>
-            <div className="flex gap-3">
-              {[Facebook, Instagram, Twitter].map((I, i) => (
+            <div className="flex items-center gap-4">
+              {[
+                { icon: Instagram, label: "Instagram" },
+                { icon: Facebook, label: "Facebook" },
+                { icon: Twitter, label: "Twitter" },
+              ].map((social, i) => (
                 <a
                   key={i}
                   href="#"
-                  className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-gold/50 transition-colors cursor-pointer text-white/50 hover:text-gold"
+                  aria-label={social.label}
+                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gold hover:bg-gold hover:text-navy transition-all duration-500"
                 >
-                  <I className="w-4 h-4" />
+                  <social.icon className="w-4 h-4" />
                 </a>
               ))}
             </div>
           </div>
 
-          {[
-            {
-              title: "Charter",
-              links: [
-                "Day Excursions",
-                "Sunset Cruises",
-                "Overnight Stays",
-                "Corporate Events",
-              ],
-            },
-            {
-              title: "Contact",
-              links: ["Call Jake: 412-418-2968", "Manager Bryon: 727-644-9653"],
-            },
-            {
-              title: "Location",
-              links: [
-                "Maximo Marina",
-                "3701 50 Ave S.",
-                "Saint Petersburg, FL 33371",
-              ],
-            },
-          ].map((c, i) => (
-            <div key={i}>
-              <h4 className="font-serif text-lg mb-6">{c.title}</h4>
-              <ul className="space-y-3">
-                {c.links.map((l) => (
-                  <li key={l} className="text-sm text-white/30">
-                    {l}
-                  </li>
-                ))}
-              </ul>
+          <div>
+            <h4 className="text-xl font-serif text-white mb-8">Contact</h4>
+            <ul className="space-y-4">
+              <li className="text-white/40 text-xs font-light tracking-wide">
+                Call Jake: 412-418-2968
+              </li>
+              <li className="text-white/40 text-xs font-light tracking-wide">
+                Manager Bryon: 727-644-9653
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xl font-serif text-white mb-8">Location</h4>
+            <ul className="space-y-1">
+              <li className="text-white/40 text-xs font-light tracking-wide">
+                Maximo Marina
+              </li>
+              <li className="text-white/40 text-xs font-light tracking-wide">
+                3701 50 Ave S.
+              </li>
+              <li className="text-white/40 text-xs font-light tracking-wide">
+                Saint Petersburg, FL 33371
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-[9px] font-bold uppercase tracking-[3px] text-white/40 mb-8 font-sans">
+              Stay Informed
+            </h4>
+            <div className="relative">
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-5 pr-12 text-sm focus:outline-none focus:border-gold/50 transition-all text-white placeholder:text-white/10"
+              />
+              <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gold hover:text-white transition-colors">
+                <ArrowUpRight className="w-5 h-5" />
+              </button>
             </div>
-          ))}
+          </div>
         </div>
 
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] md:text-xs font-medium text-white/20 tracking-widest uppercase">
-          <p>© 2025 SERENDIPITY YACHT CHARTER. ALL RIGHTS RESERVED.</p>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-gold transition-colors">
-              Privacy
-            </a>
-            <a href="#" className="hover:text-gold transition-colors">
-              Terms
-            </a>
-            <a href="#" className="hover:text-gold transition-colors">
-              Cookies
-            </a>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 opacity-20">
+          <p className="text-[9px] font-bold text-white uppercase tracking-[2px]">
+            © 2026 Serendipity Private Charters
+          </p>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Star key={i} className="w-2.5 h-2.5 fill-gold text-gold" />
+            ))}
           </div>
         </div>
       </div>
