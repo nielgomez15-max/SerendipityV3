@@ -1283,23 +1283,21 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const itemWidth = windowWidth >= 768 ? 380 : 280;
-  const gap = 24;
-  const sectionPadding = windowWidth < 768 ? 20 : 64;
-  const offset =
-    (windowWidth - itemWidth) / 2 - (windowWidth < 768 ? sectionPadding : 0);
+  const itemWidth = windowWidth >= 768 ? 380 : windowWidth - 60;
+  const gap = windowWidth >= 768 ? 24 : 12;
+  const offset = (windowWidth - itemWidth) / 2;
 
   return (
     <section
       id="experiences"
       className="py-20 md:py-28 bg-navy overflow-hidden relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)]" />
+      <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30" />
+      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)]" />
 
       {/* Viewport Gradients - Fixed at edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 md:w-64 bg-gradient-to-r from-navy via-navy/80 to-transparent z-20 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 md:w-64 bg-gradient-to-l from-navy via-navy/80 to-transparent z-20 pointer-events-none" />
+      <div className="hidden md:block absolute left-0 top-0 bottom-0 w-24 md:w-64 bg-gradient-to-r from-navy via-navy/80 to-transparent z-20 pointer-events-none" />
+      <div className="hidden md:block absolute right-0 top-0 bottom-0 w-24 md:w-64 bg-gradient-to-l from-navy via-navy/80 to-transparent z-20 pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between px-5 md:px-16 gap-8 mb-16">
@@ -1339,29 +1337,29 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
         <div className="relative overflow-visible" ref={containerRef}>
           <motion.div
             drag="x"
-            dragConstraints={{
-              right: 0,
-              left: -((extendedItems.length - 1) * (itemWidth + gap)),
-            }}
+            dragConstraints={{ right: 0, left: 0 }}
+            dragElastic={0.05}
+            dragMomentum={false}
+            style={{ willChange: "transform", gap: `${gap}px` }}
             onDragEnd={(_, info) => {
-              if (info.offset.x < -50) slide(1);
-              else if (info.offset.x > 50) slide(-1);
+              const swipeThreshold = 30; // Sensitive but controlled
+              if (info.offset.x < -swipeThreshold) slide(1);
+              else if (info.offset.x > swipeThreshold) slide(-1);
             }}
-            animate={{
-              x: -idx * (itemWidth + gap) + (windowWidth - itemWidth) / 2,
-            }}
+            animate={{ x: -idx * (itemWidth + gap) + offset }}
             transition={
               transitionStatus
-                ? { type: "spring", stiffness: 100, damping: 20 }
+                ? { type: "spring", stiffness: 250, damping: 30 }
                 : { duration: 0 }
             }
-            className="flex gap-4 cursor-grab active:cursor-grabbing"
+            className="flex"
           >
             {extendedItems.map((e, i) => (
               <div
                 key={i}
                 onClick={() => openExp(e)}
-                className="w-[240px] md:w-[320px] aspect-[10/13] relative group rounded-[1.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5"
+                style={{ width: `${itemWidth}px` }}
+                className="aspect-[10/13] relative group rounded-[1.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5"
               >
                 <img
                   src={e.img}
@@ -1390,6 +1388,20 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
               </div>
             ))}
           </motion.div>
+        </div>
+
+        {/* Slide Indicators */}
+        <div className="flex justify-center gap-3 mt-12 px-5">
+          {EXPERIENCES.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1 rounded-full transition-all duration-500 ${
+                idx % EXPERIENCES.length === i
+                  ? "w-10 bg-gold"
+                  : "w-4 bg-white/10"
+              }`}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -1423,7 +1435,7 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
                 Luxury Living
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-[70px] font-serif text-white leading-[1.1] tracking-tight">
+            <h2 className="text-4xl md:text-5xl lg:text-[70px] font-serif text-navy leading-[1.1] tracking-tight">
               Elegant Accommodations <br />
               <span className="italic text-gold block mt-2">
                 for Up to 12 Guests
@@ -1431,7 +1443,7 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
             </h2>
           </div>
           <div className="lg:col-span-4 lg:pb-4">
-            <p className="text-white/40 text-xs md:text-sm font-light leading-relaxed max-w-sm ml-auto">
+            <p className="text-navy/50 text-xs md:text-sm font-light leading-relaxed max-w-sm ml-auto">
               Rest and unwind in four refined guest suites, each designed for
               absolute comfort and offering total privacy.
             </p>
@@ -1448,15 +1460,15 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
                 className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
                 alt="Main Saloon"
               />
-              <div className="absolute inset-0 bg-navy/20 group-hover:bg-transparent transition-all duration-700" />
+              <div className="absolute inset-0 bg-navy/5 group-hover:bg-transparent transition-all duration-700" />
 
               {/* Floating Label */}
               <div className="absolute bottom-10 left-10">
-                <div className="bg-navy-light/90 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-2xl">
+                <div className="bg-white/95 backdrop-blur-xl border border-navy/5 p-6 rounded-2xl shadow-2xl">
                   <p className="text-2xl md:text-3xl font-serif text-gold leading-none mb-1">
                     4
                   </p>
-                  <p className="text-[8px] font-bold text-white/50 uppercase tracking-[2px]">
+                  <p className="text-[8px] font-bold text-navy/40 uppercase tracking-[2px]">
                     Private Suites
                   </p>
                 </div>
@@ -1473,9 +1485,9 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => openRoom(r)}
-                className="group cursor-pointer bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-5 flex items-center gap-6 hover:bg-white/10 hover:border-gold/30 transition-all shadow-xl"
+                className="group cursor-pointer bg-stone border border-navy/5 rounded-3xl p-5 flex items-center gap-6 hover:bg-stone-light hover:border-gold/30 transition-all shadow-lg"
               >
-                <div className="w-20 h-20 md:w-28 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/5">
+                <div className="w-20 h-20 md:w-28 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-navy/5">
                   <img
                     src={r.img}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -1483,20 +1495,20 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
                   />
                 </div>
                 <div className="flex-grow">
-                  <h4 className="text-lg font-serif text-white mb-1 group-hover:text-gold transition-colors">
+                  <h4 className="text-lg font-serif text-navy mb-1 group-hover:text-gold transition-colors">
                     {r.title}
                   </h4>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1px]">
+                  <p className="text-[10px] text-navy/40 uppercase tracking-[1px]">
                     {r.sub}
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-gold group-hover:translate-x-1 transition-all mr-2" />
+                <ChevronRight className="w-5 h-5 text-navy/20 group-hover:text-gold group-hover:translate-x-1 transition-all mr-2" />
               </motion.div>
             ))}
 
             {/* Premium Features Box */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2.5rem] p-8 md:p-10 mt-2 shadow-2xl">
-              <h5 className="text-xl font-serif text-white mb-8">
+            <div className="bg-stone border border-navy/5 rounded-[2.5rem] p-8 md:p-10 mt-2 shadow-lg">
+              <h5 className="text-xl font-serif text-navy mb-8">
                 Premium Flybridge Features
               </h5>
               <div className="grid grid-cols-2 gap-y-5 gap-x-4">
@@ -1505,7 +1517,7 @@ function AccommodationsSection({ openRoom }: { openRoom: (r: Room) => void }) {
                     <div className="w-5 h-5 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
                       <Check className="w-3 h-3 text-gold" />
                     </div>
-                    <span className="text-[10px] text-white/60 font-light tracking-wide">
+                    <span className="text-[10px] text-navy/60 font-light tracking-wide">
                       {f}
                     </span>
                   </div>
@@ -2003,8 +2015,8 @@ function BookingSection({
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://serendipityyachtcharter.com/wp-content/uploads/2026/01/Hero-Header-Bannern2.1-mobile.webp"
-          className="w-full h-full object-cover opacity-20"
+          src="assets/hero1.png"
+          className="w-full h-full object-cover opacity-100"
           alt="Yacht Background"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/95 to-navy/80" />
