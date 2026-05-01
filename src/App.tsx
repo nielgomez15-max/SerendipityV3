@@ -1244,22 +1244,34 @@ function VesselSection({
 }
 
 function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [direction, setDirection] = useState(0);
+  const [idx, setIdx] = useState(EXPERIENCES.length);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [transitionStatus, setTransitionStatus] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const slide = (newDirection: number) => {
+  const extendedItems = useMemo(
+    () => [...EXPERIENCES, ...EXPERIENCES, ...EXPERIENCES],
+    [],
+  );
+
+  const slide = (d: number) => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setDirection(newDirection);
-    setActiveSlide((prev) => {
-      let next = prev + newDirection;
-      if (next < 0) next = EXPERIENCES.length - 1;
-      if (next >= EXPERIENCES.length) next = 0;
-      return next;
-    });
-    setTimeout(() => setIsAnimating(false), 600);
+    setTransitionStatus(true);
+    setIdx((prev) => prev + d);
+    setTimeout(() => setIsAnimating(false), 450);
   };
+
+  useEffect(() => {
+    if (isAnimating) return;
+    if (idx >= EXPERIENCES.length * 2) {
+      setTransitionStatus(false);
+      setIdx(idx - EXPERIENCES.length);
+    } else if (idx < EXPERIENCES.length) {
+      setTransitionStatus(false);
+      setIdx(idx + EXPERIENCES.length);
+    }
+  }, [idx, isAnimating]);
 
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1400,
@@ -1271,6 +1283,11 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isMobile = windowWidth < 768;
+  const itemWidth = isMobile ? windowWidth - 64 : 380;
+  const gap = isMobile ? 12 : 32;
+  const offset = (windowWidth - itemWidth) / 2;
+
   return (
     <section
       id="experiences"
@@ -1279,8 +1296,8 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
       <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-navy via-navy/50 to-navy-light opacity-30" />
       <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,159,101,0.05)_0%,transparent_70%)]" />
 
-      <div className="max-w-[1400px] mx-auto relative z-10 px-5 md:px-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 px-5 md:px-16">
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-[1px] bg-gold" />
@@ -1314,94 +1331,82 @@ function ExperiencesSection({ openExp }: { openExp: (e: Experience) => void }) {
           </div>
         </div>
 
-        <div className="relative h-[500px] md:h-[650px] flex items-center justify-center">
-          <AnimatePresence initial={false} custom={direction} mode="popLayout">
-            <motion.div
-              key={activeSlide}
-              custom={direction}
-              variants={{
-                enter: (direction: number) => ({
-                  x: direction > 0 ? "50%" : "-50%",
-                  opacity: 0,
-                  scale: 0.9,
-                }),
-                center: {
-                  x: 0,
-                  opacity: 1,
-                  scale: 1,
-                  zIndex: 1,
-                },
-                exit: (direction: number) => ({
-                  x: direction < 0 ? "50%" : "-50%",
-                  opacity: 0,
-                  scale: 0.9,
-                  zIndex: 0,
-                }),
-              }}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 200, damping: 28 },
-                opacity: { duration: 0.3 },
-                scale: { duration: 0.4 },
-              }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.15}
-              dragMomentum={false}
-              onDragEnd={(_, info) => {
-                const swipeThreshold = 50;
-                if (info.offset.x < -swipeThreshold) slide(1);
-                else if (info.offset.x > swipeThreshold) slide(-1);
-              }}
-              className="absolute inset-0 flex items-center justify-center cursor-grab active:cursor-grabbing"
-            >
+        <div className="relative overflow-visible" ref={containerRef}>
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.1}
+            dragMomentum={false}
+            animate={{ x: -idx * (itemWidth + gap) + offset }}
+            transition={
+              transitionStatus
+                ? {
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 25,
+                    mass: 0.8,
+                  }
+                : { duration: 0 }
+            }
+            onDragEnd={(_, info) => {
+              const swipeThreshold = 50;
+              if (info.offset.x < -swipeThreshold) slide(1);
+              else if (info.offset.x > swipeThreshold) slide(-1);
+            }}
+            className="flex"
+            style={{
+              gap: `${gap}px`,
+              willChange: "transform",
+              touchAction: "pan-y",
+            }}
+          >
+            {extendedItems.map((e, i) => (
               <div
-                onClick={() => openExp(EXPERIENCES[activeSlide])}
-                className="w-full max-w-4xl h-full relative group rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.6)] border border-white/10"
+                key={i}
+                onClick={() => openExp(e)}
+                style={{ width: `${itemWidth}px` }}
+                className="aspect-[10/13] relative group rounded-[2rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer shrink-0 shadow-2xl border border-white/5"
               >
                 <img
-                  src={EXPERIENCES[activeSlide].img}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
+                  src={e.img}
+                  className="absolute inset-0 w-full h-full object-cover"
                   alt=""
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent" />
 
-                <div className="absolute inset-x-0 bottom-0 p-8 md:p-16 flex flex-col justify-end">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="w-6 h-[1px] bg-gold" />
-                    <span className="text-[10px] font-bold text-gold uppercase tracking-[3px]">
-                      {EXPERIENCES[activeSlide].tag}
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-4 h-[1px] bg-gold" />
+                    <span className="text-[8px] font-bold text-gold uppercase tracking-[2px]">
+                      {e.tag}
                     </span>
                   </div>
-                  <h3 className="text-3xl md:text-5xl font-serif text-white mb-6 transform transition-transform duration-700 group-hover:-translate-y-2">
-                    {EXPERIENCES[activeSlide].title}
+                  <h3 className="text-xl md:text-2xl font-serif text-white group-hover:text-gold transition-colors duration-500 mb-2">
+                    {e.title}
                   </h3>
-                  <div className="flex items-center gap-3 text-gold opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-700">
+                  <div className="hidden md:flex items-center gap-2 text-white/30 group-hover:text-gold transition-all duration-700 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0">
                     <span className="text-[10px] font-bold uppercase tracking-[4px]">
-                      Discover More
+                      Explore Experience
                     </span>
-                    <div className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center">
-                      <ArrowUpRight className="w-5 h-5" />
-                    </div>
+                    <ArrowUpRight className="w-4 h-4 ml-1" />
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
+            ))}
+          </motion.div>
         </div>
 
-        <div className="flex justify-center gap-4 mt-16">
+        <div className="flex justify-center gap-3 mt-16 pb-4">
           {EXPERIENCES.map((_, i) => (
             <button
               key={i}
               onClick={() => {
-                if (i === activeSlide) return;
-                slide(i > activeSlide ? 1 : -1);
+                const currentRelIdx = idx % EXPERIENCES.length;
+                slide(i - currentRelIdx);
               }}
-              className={`h-1.5 transition-all duration-500 rounded-full ${
-                activeSlide === i
+              className={`h-1.5 rounded-full transition-all duration-500 ${
+                idx % EXPERIENCES.length === i
                   ? "w-12 bg-gold"
                   : "w-4 bg-white/10 hover:bg-white/20"
               }`}
